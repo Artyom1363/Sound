@@ -51,8 +51,16 @@ def bot_init():
         # process code
         # -----------------
 
+
+        picks = [3]
         # -----------------
         # pics audio
+        # audio_clip = AudioFileClip(storage_file_path)
+        # audio_beep = AudioFileClip("./media/beep.mp3").set_duration(1)
+        # for pickTime in picks:
+        #     audio_clip = CompositeAudioClip([audio_clip, audio_beep.set_start(pickTime)])
+        # storage_file_path = prepare_storage_path("beep_" + storage_file_path[storage_file_path.find('/') + 1:])
+        # audio_clip.write_audiofile(storage_file_path, fps=44100, codec="libmp3lame")
         # -----------------
 
         if message.content_type == 'video':
