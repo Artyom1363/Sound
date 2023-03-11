@@ -55,19 +55,21 @@ def bot_init():
         picks = [3]
         # -----------------
         # pics audio
-        # audio_clip = AudioFileClip(storage_file_path)
-        # audio_beep = AudioFileClip("./media/beep.mp3").set_duration(1)
-        # for pickTime in picks:
-        #     audio_clip = CompositeAudioClip([audio_clip, audio_beep.set_start(pickTime)])
-        # storage_file_path = prepare_storage_path("beep_" + storage_file_path[storage_file_path.find('/') + 1:])
-        # audio_clip.write_audiofile(storage_file_path, fps=44100, codec="libmp3lame")
+        audio_clip = AudioFileClip(storage_file_path)
+        audio_beep = AudioFileClip("./media/beep.mp3").set_duration(1)
+        for pickTime in picks:
+            # audio_beep.set_end(pickTime + 1)
+            audio_clip = CompositeAudioClip([audio_clip, audio_beep.set_start(pickTime)])
+        storage_file_path = './storage/beep_' + storage_file_path[storage_file_path.rfind('/') + 1:]
+
+        audio_clip.write_audiofile(storage_file_path, fps=44100, codec="libmp3lame")
         # -----------------
 
         if message.content_type == 'video':
             video_clip = VideoFileClip(storage_video_file_path)
             audio_clip = AudioFileClip(storage_file_path)
             final_clip = video_clip.set_audio(audio_clip)
-            storage_file_path = prepare_storage_path("final_" + storage_video_file_path[storage_video_file_path.find('/') + 1:])
+            storage_file_path = './storage/final_' + storage_video_file_path[storage_video_file_path.rfind('/') + 1:]
             final_clip.write_videofile(storage_file_path)
 
         # send
