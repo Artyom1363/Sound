@@ -34,7 +34,7 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer file.Close()
-		fmt.Fprintf(w, "%v", handler.Header)
+		//fmt.Fprintf(w, "%v", handler.Header)
 		filePath := "./fileserver/" + handler.Filename
 		f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0666)
 		if err != nil {
@@ -44,7 +44,7 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 		defer f.Close()
 		io.Copy(f, file)
 
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("link: http://localhost:8000/fileserver/" + handler.Filename))
+		//w.WriteHeader(http.StatusOK)
+		w.Write([]byte("http://localhost:8000/fileserver/" + handler.Filename))
 	}
 }

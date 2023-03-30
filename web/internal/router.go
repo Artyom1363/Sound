@@ -12,8 +12,10 @@ func InitRouter() {
 	r := mux.NewRouter()
 	r.HandleFunc("/me", handler.MeHandler)
 	r.HandleFunc("/upload", handler.Upload)
-	//r.Handle("/", http.http.FileServer(http.Dir("../static")))
+	//r.Handle("/", http.FileServer(http.Dir("./static")))
 	r.PathPrefix("/fileserver/").Handler(http.StripPrefix("/fileserver/", http.FileServer(http.Dir("./fileserver"))))
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+	//r.PathPrefix("").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	//r.HandleFunc("/articles", ArticlesHandler)
 
 	srv := &http.Server{

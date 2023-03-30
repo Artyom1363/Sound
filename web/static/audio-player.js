@@ -21,11 +21,13 @@ playBtn.onclick = function (){
     wavesurfer.playPause();
 }
 
-zoomSlider.oninput = function (){
-    wavesurfer.zoom(Number(this.value));
-};
 
+function initPlayer(audio) {
+    // zoomSlider.oninput = function (){
+    //     wavesurfer.zoom(Number(this.value));
+    // };
 
 // Load audio from URL
-wavesurfer.load('media/audio.mp3');
+    wavesurfer.load(audio);
+}
 
