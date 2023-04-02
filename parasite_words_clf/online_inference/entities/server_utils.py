@@ -42,7 +42,7 @@ class WordClassifier:
             for idx, word in enumerate(words_in_sent):
                 if word == 'короче':
                     counters[word] += 1
-                    if pred[counters[word]] >= 0.9:
+                    if counters[word] < len(pred) and pred[counters[word]] >= 0.9:
                         ans.append(idx)
 
             return ans
