@@ -1,0 +1,5 @@
+deepfilternet
+stable-ts
+fastapi
+uvicorn[standard]
+python-multipart
