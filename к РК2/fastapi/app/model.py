@@ -83,10 +83,11 @@ def worker_ant(queue:mp.Queue, err_queue:mp.Queue):
                 json.dump(response_json, outfile, ensure_ascii=False)
             os.remove(audiofile_path+'.blocked')
         except BaseException as e:
-            err_queue.put(audiofile_path, e)
+            print(e)
+            err_queue.put(audiofile_path, 0)
             
             with open(audiofile_path+'.error','wb') as f:
-                f.write(e)
+                f.write(repr(e))
             os.remove(audiofile_path+'.blocked')
 
             
