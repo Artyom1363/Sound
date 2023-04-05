@@ -18,6 +18,18 @@ logger = logging.getLogger(__name__)
 
 PATH_TO_PARASITE_WORDS_CLF_HEAD = 'online_inference/models/short_classif.pt'
 
+MODEL_PATHS = {
+    "короче": {
+        "model_path": 'online_inference/models/short_classif.pt',
+        "parasite_word_id": 80062,
+    },
+    "типа": {
+        "model_path": 'online_inference/models/tipa_classif.pt',
+        "parasite_word_id": 21798,
+    }
+}
+
+
 @app.get("/")
 def read_root():
     return "Parasite words classifier online"
@@ -33,7 +45,7 @@ def loading_model():
         logger.error(err)
         raise RuntimeError(err)
 
-    model = WordClassifier(model_path) #load_model(model_path)
+    model = WordClassifier(MODEL_PATHS) #load_model(model_path)
 
 
 @app.get("/health")

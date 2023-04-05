@@ -7,43 +7,61 @@ from src.models import ParasiteWordsClfHead
 
 
 class WordClassifier:
-    def __init__(self, path_to_model):
+    def __init__(self, meta_info):
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased', padding=True)
         self.bert = BertModel.from_pretrained("bert-base-multilingual-cased")
-        self.classif_head = ParasiteWordsClfHead(768, 1)
-        self.classif_head.load_state_dict(torch.load(path_to_model))
         self.bert.eval()
-        self.bad_word_token_ids = [80062, ]
+        self.context_independent_bad_words = ['ну']
 
-    def classify(self, sentence) -> list:
+        self.clf_heads = {}
+        for bad_word, meta_data in meta_info.items():
+            clf_head = ParasiteWordsClfHead(768, 1)
+            clf_head.load_state_dict(torch.load(meta_data["model_path"]))
+            self.clf_heads[bad_word] = {}
+            self.clf_heads[bad_word]['model'] = clf_head
+            self.clf_heads[bad_word]['id'] = meta_data['parasite_word_id']
+
+        print(self.clf_heads)
+
+    #         self.bad_word_token_ids = [cur_bad_word_id,]
+
+    def classify(self, sentence):
+        sentence = sentence.lower()
         words_in_sent = re.split('\W+', sentence)
         tokenized_sent = self.tokenizer(sentence, truncation=True, return_tensors='pt', padding='max_length',
                                         max_length=512)
 
-        indexes_with_bad_words = []
-        indexes_with_bad_words = [index for (index, item) in enumerate(tokenized_sent['input_ids'][0].tolist()) if
-                                  item == self.bad_word_token_ids[0]]
-
-        if len(indexes_with_bad_words) == 0:
-            return []
         with torch.no_grad():
             model_output = self.bert(**tokenized_sent)
             word_embeddings = model_output[0].squeeze()
-            filtered_embeddings = torch.index_select(word_embeddings, 0, torch.tensor(indexes_with_bad_words))
-            pred = self.classif_head(filtered_embeddings)
-            pred = pred.squeeze(1)
-            pred = (pred > 0.5).float().tolist()
 
-            ans = []
+            predictions = {}
+            counters = {}
 
-            counters = {
-                "короче": -1,
-            }
+            for bad_word, meta_data in self.clf_heads.items():
+                indexes_with_parasite_ids = [index for (index, item) in
+                                             enumerate(tokenized_sent['input_ids'][0].tolist()) if
+                                             item == meta_data['id']]
+
+                if len(indexes_with_parasite_ids) == 0:
+                    continue
+                filtered_embeddings = torch.index_select(word_embeddings, 0, torch.tensor(indexes_with_parasite_ids))
+                predictions[bad_word] = meta_data['model'](filtered_embeddings)
+
+                predictions[bad_word] = predictions[bad_word].squeeze(1)
+                predictions[bad_word] = (predictions[bad_word] > 0.5).float().tolist()
+
+                counters[bad_word] = -1
+
+            parasite_word_indexes = []
+
             for idx, word in enumerate(words_in_sent):
-                if word == 'короче':
+                if word in counters.keys():
                     counters[word] += 1
-                    if counters[word] < len(pred) and pred[counters[word]] >= 0.9:
-                        ans.append(idx)
+                    if predictions[word][counters[word]] >= 0.9:
+                        parasite_word_indexes.append(idx)
 
-            return ans
+                elif word in self.context_independent_bad_words:
+                    parasite_word_indexes.append(idx)
 
+            return parasite_word_indexes
