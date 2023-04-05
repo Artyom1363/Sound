@@ -2,4 +2,4 @@ package config
 
 const Domain = "localhost"
 
-const Port = "8000"
+const Port = "8080"

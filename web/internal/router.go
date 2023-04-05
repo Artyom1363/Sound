@@ -16,6 +16,7 @@ func InitRouter() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/me", handler.MeHandler)
+	r.HandleFunc("/", handler.Index)
 	r.HandleFunc("/socket", websocket.SocketReaderCreate)
 	r.HandleFunc("/upload", handler.Upload)
 	r.HandleFunc("/process", handler.Process)

@@ -21,6 +21,10 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello, it's me!"))
 }
 
+func Index(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/static/", http.StatusTemporaryRedirect)
+}
+
 func Upload(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Метод:", r.Method)
 	if r.Method == "GET" {
