@@ -21,6 +21,8 @@ func InitRouter() {
 	r.HandleFunc("/upload", handler.Upload)
 	r.HandleFunc("/process", handler.Process)
 	r.HandleFunc("/getText", handler.GetText)
+	r.HandleFunc("/getResultFile", handler.GetResultFile)
+	r.HandleFunc("/getResultText", handler.GetResultText)
 
 	r.Use(middleware.Session)
 

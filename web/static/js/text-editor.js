@@ -42,3 +42,14 @@ getTextBtn.onclick = function () {
         alert(err)
     })
 }
+
+function initEditor(resultID) {
+    fetch(getResultTextAPI + new URLSearchParams({
+        resultID: resultID,
+    })).then(async response => {
+        $('#summernote').summernote('reset');
+        $('#summernote').summernote('pasteHTML', await response.text());
+    }).catch(err => {
+        alert(err)
+    })
+}
