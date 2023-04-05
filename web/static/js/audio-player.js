@@ -1,10 +1,10 @@
 var playBtn = document.getElementById('play')
-var zoomSlider = document.getElementById('slider')
+// var zoomSlider = document.getElementById('slider')
 
 let wavesurfer = WaveSurfer.create({
     container: '#waveform',
-    waveColor: '#A8DBA8',
-    progressColor: '#3B8686',
+    waveColor: '#26f0df',
+    progressColor: '#224ab1',
     barWidth: 3,
     barHeight: 1, // the height of the wave
     backend: 'MediaElement',
@@ -22,12 +22,15 @@ playBtn.onclick = function (){
 }
 
 
+
+var pleerBlock1 = document.getElementById('pleer-1')
+
 function initPlayer(audio) {
     // zoomSlider.oninput = function (){
     //     wavesurfer.zoom(Number(this.value));
     // };
 
+    pleerBlock1.style.display = "block"
 // Load audio from URL
     wavesurfer.load(audio);
 }
-
