@@ -1,11 +1,10 @@
-torch
-# torchaudio
+torch==2.0.0
+torchaudio==2.0.1
 fastapi
 pydantic
-uvicorn
-deepfilternet
+DeepFilterLib==0.4.0
+deepfilternet==0.4.0
 stable-ts
-fastapi
 uvicorn[standard]
 python-multipart
 sympy 

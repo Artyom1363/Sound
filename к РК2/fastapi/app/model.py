@@ -86,7 +86,7 @@ def worker_ant(queue:mp.Queue, err_queue:mp.Queue):
             print(e)
             err_queue.put(audiofile_path, 0)
             
-            with open(audiofile_path+'.error','wb') as f:
+            with open(audiofile_path+'.error','w') as f:
                 f.write(repr(e))
             os.remove(audiofile_path+'.blocked')
 
