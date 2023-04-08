@@ -23,7 +23,8 @@ function process(audioLink) {
 function processFinish(mess) {
     showProcessStop()
     initPlayer(mess.audio);
-    initEditor(mess.resultID);
+    initEditor(mess.text);
+    initRegions(mess.audioMarkers)
 }
 
 processBtn.onclick = function () {

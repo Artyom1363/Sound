@@ -4,7 +4,6 @@ import (
 	"math/rand"
 	"net/http"
 	"time"
-	"web/internal/handler/config"
 )
 
 func Session(h http.Handler) http.Handler {
@@ -12,7 +11,7 @@ func Session(h http.Handler) http.Handler {
 		if _, err := r.Cookie("session"); err != nil {
 			cookie := &http.Cookie{
 				Name:    "session",
-				Domain:  config.Domain,
+				Domain:  r.URL.Host,
 				Path:    "/",
 				Expires: time.Now().Add(time.Hour * 24),
 				Value:   RandStringRunes(20),

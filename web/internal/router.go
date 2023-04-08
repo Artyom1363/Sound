@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"web/internal/config"
 	"web/internal/handler"
-	"web/internal/handler/config"
 	"web/internal/handler/middleware"
 	"web/internal/handler/websocket"
 )
@@ -18,11 +18,14 @@ func InitRouter() {
 	r.HandleFunc("/me", handler.MeHandler)
 	r.HandleFunc("/", handler.Index)
 	r.HandleFunc("/socket", websocket.SocketReaderCreate)
-	r.HandleFunc("/upload", handler.Upload)
-	r.HandleFunc("/process", handler.Process)
 	r.HandleFunc("/getText", handler.GetText)
 	r.HandleFunc("/getResultFile", handler.GetResultFile)
-	r.HandleFunc("/getResultText", handler.GetResultText)
+	//r.HandleFunc("/getResultText", handler.GetResultText)
+	r.HandleFunc("/health/parasite", handler.HealthParasite)
+	r.HandleFunc("/health/transcribe", handler.HealthTranscribe)
+
+	r.HandleFunc("/upload", handler.Upload)
+	r.HandleFunc("/process", handler.Process)
 
 	r.Use(middleware.Session)
 
@@ -34,10 +37,10 @@ func InitRouter() {
 
 	srv := &http.Server{
 		Handler: r,
-		Addr:    config.Domain + ":" + config.Port,
+		Addr:    config.BackendAddr,
 		// Good practice: enforce timeouts for servers you create!
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 5 * time.Minute,
+		ReadTimeout:  5 * time.Minute,
 	}
 
 	log.Fatal(srv.ListenAndServe())
