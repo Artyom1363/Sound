@@ -1,5 +1,6 @@
 import subprocess
 import soundfile
+import librosa
 
 SAMPLE_RATE = 16000
 
@@ -26,14 +27,20 @@ def ffmpeg_convert(input_audiofile, output_audiofile, sr=SAMPLE_RATE):
     # fmpeg command
     cmd = ["ffmpeg", "-i", input_audiofile, "-ac", "1", "-af", "aresample=resampler=soxr", "-ar", str(sr), "-y", output_audiofile]
     # print(' '.join(cmd))
-    # return
     completed_process = subprocess.run(cmd)
-
+    print(' '.join(cmd))
     # confirm process completed successfully
     assert completed_process.returncode == 0
 
     # confirm new file has desired sample rate
     assert soundfile.info(output_audiofile).samplerate == sr
+
+
+def librosa_convert(input_audiofile, output_audiofile, target_sr=SAMPLE_RATE):
+    y, sr = librosa.load(input_audiofile)
+    data = librosa.resample(y, sr, target_sr)
+    # librosa.output.write_wav(output_audiofile, data, target_sr)
+    soundfile.write(output_audiofile, data, target_sr)
 
 
 def cut_file(src_filepath, tar_filepath, start_time, end_time):
