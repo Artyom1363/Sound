@@ -12,6 +12,7 @@ from src.models import Wav2Vec2ForSpeechClassification
 from transformers import AutoConfig, Wav2Vec2Processor
 
 
+SAMPLING_RATE = 16000
 app = FastAPI()
 
 model_name_or_path = "jonatasgrosman/wav2vec2-large-xlsr-53-russian"
@@ -42,9 +43,11 @@ def create_query_paths(data_directory: str) -> Tuple[str, str]:
     query_dir = os.path.join(data_directory, timestr)
     fragments_path_mp3 = os.path.join(query_dir, "gaps_mp3")
     fragments_path_wav = os.path.join(query_dir, "gaps_wav")
+    fragments_path_speech_wav = os.path.join(query_dir, "gaps_speech_wav")
     os.makedirs(query_dir)
     os.mkdir(fragments_path_mp3)
     os.mkdir(fragments_path_wav)
+    os.mkdir(fragments_path_speech_wav)
     return query_dir
 
 
@@ -60,10 +63,13 @@ def slice_the_voids(query_dir: str) -> List[Tuple[float, float, str]]:
     source_text_info_file_path = os.path.join(query_dir, 'text_info.json')
     gaps_mp3_dir_path = os.path.join(query_dir, 'gaps_mp3')
     gaps_wav_dir_path = os.path.join(query_dir, 'gaps_wav')
+    gaps_speech_wav_dir_path = os.path.join(query_dir, 'gaps_speech_wav')
     json_file = open(source_text_info_file_path)
     data_str = json.load(json_file)
     data = json.loads(data_str)
     data = sorted(data['words'], key=lambda word: word['start'])
+    speech_in_gaps = []
+
 
     for idx, word in enumerate(data):
 
@@ -80,12 +86,25 @@ def slice_the_voids(query_dir: str) -> List[Tuple[float, float, str]]:
         gaps.append((start_gap, end_gap, gap_wav_file_path))
 
         cut_file(source_audio_file_path, gap_mp3_file_path, start_gap, end_gap)
-        # ffmpeg_convert(gap_mp3_file_path, gap_wav_file_path)
-        librosa_convert(gap_mp3_file_path, gap_wav_file_path)
 
+        # ffmpeg_convert(gap_mp3_file_path, gap_wav_file_path)
+        wav_audio = librosa_convert(gap_mp3_file_path, gap_wav_file_path)
+
+        speech_timestamps = get_speech_timestamps(wav_audio, vad_model, sampling_rate=SAMPLING_RATE)
+        for timestamp in speech_timestamps:
+            start_gap_speech = timestamp['start'] / SAMPLING_RATE
+            end_gap_speech = timestamp['end'] / SAMPLING_RATE
+            timestamp['start'] /= SAMPLING_RATE
+            timestamp['end'] /= SAMPLING_RATE
+            gap_speech_wav_file_path = os.path.join(gaps_speech_wav_dir_path, f'{len(speech_in_gaps)}.wav')
+            # print("Debug: ", gap_wav_file_path, gap_speech_wav_file_path)
+            cut_file(gap_wav_file_path, gap_speech_wav_file_path, start_gap_speech, end_gap_speech)
+            speech_in_gaps.append((start_gap + timestamp['start'], start_gap + timestamp['end'], gap_speech_wav_file_path))
+
+        # print("gap file: ", gap_wav_file_path, ": ", speech_timestamps)
         start_gap = word['end']
 
-    return gaps
+    return speech_in_gaps
 
 
 def predict_model(speech_array, model, processor, device):
@@ -112,6 +131,8 @@ def loading_model():
     global model
     global processor
     global device
+    global vad_model
+    global get_speech_timestamps
     device = 'cpu'
 
     config = AutoConfig.from_pretrained(
@@ -130,6 +151,17 @@ def loading_model():
 
     model.load_state_dict(torch.load(PATH_TO_MODEL))
     processor = Wav2Vec2Processor.from_pretrained(model_name_or_path)
+
+    vad_model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad',
+                                  model='silero_vad',
+                                  force_reload=True,
+                                  onnx=False)
+
+    (get_speech_timestamps,
+     save_audio,
+     read_audio,
+     VADIterator,
+     collect_chunks) = utils
     # model = 1
     # model_path = PATH_TO_PARASITE_WORDS_CLF_HEAD
     # if model_path is None:

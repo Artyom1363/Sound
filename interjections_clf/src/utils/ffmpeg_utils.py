@@ -41,6 +41,7 @@ def librosa_convert(input_audiofile, output_audiofile, target_sr=SAMPLE_RATE):
     data = librosa.resample(y, sr, target_sr)
     # librosa.output.write_wav(output_audiofile, data, target_sr)
     soundfile.write(output_audiofile, data, target_sr)
+    return data
 
 
 def cut_file(src_filepath, tar_filepath, start_time, end_time):
