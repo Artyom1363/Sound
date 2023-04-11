@@ -30,20 +30,22 @@ $(document).ready(function() {
 });
 
 
-var getTextBtn = document.getElementById('get-text')
-
-getTextBtn.onclick = function () {
-    fetch(getTextAPI + new URLSearchParams({
-        text: $($('#summernote').summernote('code')).text(),
-    })).then(async response => {
-        $('#summernote').summernote('reset');
-        $('#summernote').summernote('pasteHTML', await response.text());
-    }).catch(err => {
-        alert(err)
-    })
-}
+// var getTextBtn = document.getElementById('get-text')
+//
+// getTextBtn.onclick = function () {
+//     fetch(getTextAPI + new URLSearchParams({
+//         text: $($('#summernote').summernote('code')).text(),
+//     })).then(async response => {
+//         $('#summernote').summernote('reset');
+//         $('#summernote').summernote('pasteHTML', await response.text());
+//     }).catch(err => {
+//         alert(err)
+//     })
+// }
+textEditorBlock = document.getElementById('text-editor')
 
 function initEditor(filePath) {
+    textEditorBlock.style.display = "block"
     fetch(fileServerAPI + filePath).then(async response => {
         $('#summernote').summernote('reset');
         $('#summernote').summernote('pasteHTML', await response.text());

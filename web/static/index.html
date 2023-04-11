@@ -49,12 +49,20 @@
 <!--        </div>-->
     </div>
 
-    <div class="container">
+    <div class="container" id="text-editor" style="display: none;">
         <form method="post">
             <textarea id="summernote" name="editordata"></textarea>
 <!--            <input class="btn btn-outline-success my-2 my-sm-0" type="submit" value="Загрузить">-->
         </form>
         <input class="btn btn-primary" id="get-text" value="Проанализировать текст">
+    </div>
+
+    <div class="container" id="pleer-2" style="display: none;">
+        <div id="waveform-2"></div>
+        <button class="btn btn-primary" id="play-2" data-action="play">Play/Pause</button>
+        <!--        <div class="col-sm-3">-->
+        <!--            <input data-action="zoom" #slider type="range" min="20" max="1000" value="0" style="width: 100%">-->
+        <!--        </div>-->
     </div>
 
     <div class="container fixed-bottom">

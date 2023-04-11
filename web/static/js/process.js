@@ -23,6 +23,7 @@ function process(audioLink) {
 function processFinish(mess) {
     showProcessStop()
     initPlayer(mess.audio);
+    initPlayerProcessed(mess.cutAudio);
     initEditor(mess.text);
     initRegions(mess.audioMarkers)
 }

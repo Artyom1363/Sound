@@ -6,6 +6,7 @@ import (
 	"web/internal/app/connectors/mezdo"
 	"web/internal/app/connectors/parasite"
 	"web/internal/app/connectors/transcribe"
+	"web/internal/app/cutter"
 	"web/internal/app/files"
 	"web/internal/app/markers"
 	"web/internal/handler/websocket"
@@ -20,11 +21,12 @@ type Pipeline struct {
 	parasiteWordsInds []int
 	badWordsInds      []int
 
-	text string
+	transcription *transcribe.TranscribeText
 
-	resultAudioFilePath string
-	resultTextFilePath  string
-	resultAudioMarkers  string
+	resultAudioFilePath    string
+	resultCutAudioFilePath string
+	resultTextFilePath     string
+	resultAudioMarkers     string
 }
 
 func New(session string, srcFilePath string) *Pipeline {
@@ -36,7 +38,7 @@ func New(session string, srcFilePath string) *Pipeline {
 
 func (p *Pipeline) Start() {
 	var err error
-	p.resultTextFilePath, p.resultAudioFilePath, p.text, p.badWordsInds, p.transcribeResultID, err = transcribe.Run(p.sourceAudioFilePath)
+	p.resultTextFilePath, p.resultAudioFilePath, p.transcription, p.badWordsInds, p.transcribeResultID, err = transcribe.Run(p.sourceAudioFilePath)
 	if err != nil {
 		log.Printf("transpile: %v", err)
 		mess := fmt.Sprintf(`{"status":"error", "source":"process", "error":"%s"}`, err)
@@ -44,7 +46,7 @@ func (p *Pipeline) Start() {
 		return
 	}
 
-	p.parasiteWordsInds, err = parasite.Run(p.text)
+	p.parasiteWordsInds, err = parasite.Run(p.transcription.Text)
 	if err != nil {
 		log.Printf("parasite: %v", err)
 		mess := fmt.Sprintf(`{"status":"error", "source":"process", "error":"%s"}`, err)
@@ -60,8 +62,8 @@ func (p *Pipeline) Start() {
 		return
 	}
 
-	p.text = markers.EnrichTextWithMarkers(p.text, p.parasiteWordsInds, p.badWordsInds)
-	p.resultTextFilePath, err = files.SaveToTextFile([]byte(p.text))
+	p.transcription.Text = markers.EnrichTextWithMarkers(p.transcription.Text, p.parasiteWordsInds, p.badWordsInds)
+	p.resultTextFilePath, err = files.SaveToTextFile([]byte(p.transcription.Text))
 	if err != nil {
 		log.Printf("save result: %v", err)
 		mess := fmt.Sprintf(`{"status":"error", "source":"process", "error":"%s"}`, err)
@@ -69,7 +71,15 @@ func (p *Pipeline) Start() {
 		return
 	}
 
-	mess := fmt.Sprintf(`{"status":"success", "source":"process", "audio":"%s", "text":"%s", "audioMarkers":"%s"}`, p.resultAudioFilePath, p.resultTextFilePath, p.resultAudioMarkers)
+	p.resultCutAudioFilePath, err = cutter.Run(p.resultAudioFilePath, p.transcription, p.badWordsInds, p.parasiteWordsInds)
+	if err != nil {
+		log.Printf("cut audio: %v", err)
+		mess := fmt.Sprintf(`{"status":"error", "source":"process", "error":"%s"}`, err)
+		websocket.SendMessage(p.userSession, mess)
+		return
+	}
+
+	mess := fmt.Sprintf(`{"status":"success", "source":"process", "audio":"%s", "cutAudio":"%s", "text":"%s", "audioMarkers":"%s"}`, p.resultAudioFilePath, p.resultCutAudioFilePath, p.resultTextFilePath, p.resultAudioMarkers)
 	websocket.SendMessage(p.userSession, mess)
 	log.Printf("pipline finished")
 }

@@ -22,7 +22,7 @@ type Resp struct {
 	FileID int `json:"file_id"`
 }
 
-func Run(filePath string) (string, string, string, []int, int, error) {
+func Run(filePath string) (string, string, *TranscribeText, []int, int, error) {
 	client := &http.Client{
 		Timeout: time.Minute * 2,
 	}
@@ -32,70 +32,70 @@ func Run(filePath string) (string, string, string, []int, int, error) {
 
 	fileName, found := strings.CutPrefix(filePath, "fileserver/")
 	if !found {
-		return "", "", "", nil, 0, fmt.Errorf("fail to get filename: %s", filePath)
+		return "", "", nil, nil, 0, fmt.Errorf("fail to get filename: %s", filePath)
 	}
 
 	fw, err := writer.CreateFormFile("file", fileName)
 	if err != nil {
-		return "", "", "", nil, 0, fmt.Errorf("fail to create file form: %v", err)
+		return "", "", nil, nil, 0, fmt.Errorf("fail to create file form: %v", err)
 	}
 	file, err := os.Open(filePath)
 	if err != nil {
-		return "", "", "", nil, 0, fmt.Errorf("fail to open file: %v", err)
+		return "", "", nil, nil, 0, fmt.Errorf("fail to open file: %v", err)
 	}
 	_, err = io.Copy(fw, file)
 	if err != nil {
-		return "", "", "", nil, 0, fmt.Errorf("fail to copy file: %v", err)
+		return "", "", nil, nil, 0, fmt.Errorf("fail to copy file: %v", err)
 	}
 	writer.Close()
 
 	req, err := http.NewRequest(http.MethodPost, config.TranscribeAPI, bytes.NewReader(body.Bytes()))
 	if err != nil {
-		return "", "", "", nil, 0, fmt.Errorf("fail to create request: %v", err)
+		return "", "", nil, nil, 0, fmt.Errorf("fail to create request: %v", err)
 	}
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	rsp, err := client.Do(req)
 	if err != nil {
-		return "", "", "", nil, 0, fmt.Errorf("fail to execute request: %v", err)
+		return "", "", nil, nil, 0, fmt.Errorf("fail to execute request: %v", err)
 	}
 
 	if rsp.StatusCode != http.StatusOK {
-		return "", "", "", nil, 0, fmt.Errorf("request failed with response code: %d", rsp.StatusCode)
+		return "", "", nil, nil, 0, fmt.Errorf("request failed with response code: %d", rsp.StatusCode)
 	}
 
 	rspBody, err := io.ReadAll(rsp.Body)
 	if err != nil {
-		return "", "", "", nil, 0, fmt.Errorf("fail to read response: %v", err)
+		return "", "", nil, nil, 0, fmt.Errorf("fail to read response: %v", err)
 	}
 
 	var resp Resp
 	if err = json.Unmarshal(rspBody, &resp); err != nil {
-		return "", "", "", nil, 0, fmt.Errorf("fail to unmarshal resp: %v", err)
+		return "", "", nil, nil, 0, fmt.Errorf("fail to unmarshal resp: %v", err)
 	}
 
 	err = waitResult(resp.FileID)
 	if err != nil {
-		return "", "", "", nil, 0, fmt.Errorf("fail wait result: %v", err)
+		return "", "", nil, nil, 0, fmt.Errorf("fail wait result: %v", err)
 	}
 
 	textFilePath, rawText, err := getResultTextFile(resp.FileID)
 	if err != nil {
-		return "", "", "", nil, 0, fmt.Errorf("fail get result text file: %v", err)
+		return "", "", nil, nil, 0, fmt.Errorf("fail get result text file: %v", err)
 	}
 
 	audioFilePath, err := getResultAudioFile(resp.FileID)
 	if err != nil {
-		return "", "", "", nil, 0, fmt.Errorf("fail get result audio file: %v", err)
+		return "", "", nil, nil, 0, fmt.Errorf("fail get result audio file: %v", err)
 	}
 
 	transcribeText, err := parseText(rawText)
 	if err != nil {
-		return "", "", "", nil, 0, fmt.Errorf("fail parse text: %v", err)
+		return "", "", nil, nil, 0, fmt.Errorf("fail parse text: %v", err)
 	}
 
 	badWordsIds := parseBadWords(transcribeText)
 
-	return textFilePath, audioFilePath, transcribeText.Text, badWordsIds, resp.FileID, nil
+	return textFilePath, audioFilePath, transcribeText, badWordsIds, resp.FileID, nil
 }
 
 func waitResult(resultID int) error {
