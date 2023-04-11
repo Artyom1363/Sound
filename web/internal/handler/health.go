@@ -32,6 +32,26 @@ func HealthParasite(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(HealthStatusOk))
 }
 
+func HealthMezdo(w http.ResponseWriter, r *http.Request) {
+	resp, err := http.Get(config.MezdoAPIHealth)
+	if err != nil {
+		w.Write([]byte(HealthStatusUnavailable))
+		return
+	}
+
+	rspBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		w.Write([]byte(HealthStatusNotReady))
+		return
+	}
+	if string(rspBody) != "\"Model is ready\"" {
+		w.Write([]byte(HealthStatusNotReady))
+		return
+	}
+
+	w.Write([]byte(HealthStatusOk))
+}
+
 func HealthTranscribe(w http.ResponseWriter, r *http.Request) {
 	resp, err := http.Get(config.TranscribeAPIHealth)
 	if err != nil {

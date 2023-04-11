@@ -17,5 +17,6 @@ const (
 )
 
 const (
-	MezdoApi = MezdoAddr + "/predict/"
+	MezdoAPIHealth = MezdoAddr + "/health"
+	MezdoApi       = MezdoAddr + "/predict/"
 )

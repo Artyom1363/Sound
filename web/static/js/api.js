@@ -10,6 +10,7 @@ const getResultFileAPI = 'http://' + server + '/getResultFile?'
 
 const healthParasiteAPI = 'http://' + server + '/health/parasite'
 const healthTranscribeAPI = 'http://' + server + '/health/transcribe'
+const healthMezdoAPI = 'http://' + server + '/health/mezdo'
 
 
 

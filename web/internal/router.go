@@ -23,6 +23,7 @@ func InitRouter() {
 	//r.HandleFunc("/getResultText", handler.GetResultText)
 	r.HandleFunc("/health/parasite", handler.HealthParasite)
 	r.HandleFunc("/health/transcribe", handler.HealthTranscribe)
+	r.HandleFunc("/health/mezdo", handler.HealthMezdo)
 
 	r.HandleFunc("/upload", handler.Upload)
 	r.HandleFunc("/process", handler.Process)
@@ -43,5 +44,6 @@ func InitRouter() {
 		ReadTimeout:  5 * time.Minute,
 	}
 
+	log.Printf("Server started at %s", srv.Addr)
 	log.Fatal(srv.ListenAndServe())
 }

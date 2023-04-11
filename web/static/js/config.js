@@ -1,1 +1,1 @@
-const server = 'localhost:8000'
+const server = 'sweetvoice.ru:8000'

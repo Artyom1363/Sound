@@ -1,5 +1,6 @@
 let healthCircleParasite = document.getElementById('health-api-parasite');
 let healthCircleTranscribe = document.getElementById('health-api-transcribe');
+let healthCircleMezdo = document.getElementById('health-api-mezdo');
 
 let healthItems = [{
         indicator: healthCircleParasite,
@@ -8,6 +9,10 @@ let healthItems = [{
     {
         indicator: healthCircleTranscribe,
         api: healthTranscribeAPI,
+    },
+    {
+        indicator: healthCircleMezdo,
+        api: healthMezdoAPI,
     },
 ]
 
