@@ -1,8 +1,8 @@
 package config
 
-const ParasiteAddr = "http://91.142.74.200:8000"
+const ParasiteAddr = "http://195.133.60.176:8000"
 const TranscribeAddr = "http://95.64.151.158:8000"
-const MezdoAddr = "http://62.113.117.121:8001"
+const MezdoAddr = "http://195.133.60.176:8001"
 
 const (
 	ParasiteAPIHealth = ParasiteAddr + "/health"
