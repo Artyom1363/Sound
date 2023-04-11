@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: server
-          path: ./web
+          path: web
 
   deploy:
      runs-on: ubuntu-latest
