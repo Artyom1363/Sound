@@ -76,7 +76,7 @@ jobs:
            username: ubuntu
            key: ${{ secrets.WEB_PRIVATE_KEY }}
            script: |
-             #PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
+             PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/go/bin"
              cd /home/ubuntu/server
              nohup ./stop.sh > /dev/null 2>&1&
              nohup ./run.sh > logs.log 2>logs.log&
