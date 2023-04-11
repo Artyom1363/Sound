@@ -10,12 +10,15 @@ import (
 
 func Run(inputPath string, transcription *transcribe.TranscribeText, badWordsMarkers []int, parasiteWordsMarkers []int) (string, error) {
 	outputPath := getOutputPath(inputPath)
-	err := ffmpeg.Input(inputPath).
-		Filter("aselect", ffmpeg.Args{prepareCutFilterArgs(transcription.Words, parasiteWordsMarkers)}).
-		Output(outputPath).
-		OverWriteOutput().Run()
-	if err != nil {
-		return "", fmt.Errorf("fail to cut audio: %v", err)
+
+	if len(parasiteWordsMarkers) > 0 {
+		err := ffmpeg.Input(inputPath).
+			Filter("aselect", ffmpeg.Args{prepareCutFilterArgs(transcription.Words, parasiteWordsMarkers)}).
+			Output(outputPath).
+			OverWriteOutput().Run()
+		if err != nil {
+			return "", fmt.Errorf("fail to cut audio: %v", err)
+		}
 	}
 
 	return outputPath, nil
