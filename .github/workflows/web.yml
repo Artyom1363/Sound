@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: server
-          path: .
+          path: ./web
 
   deploy:
      runs-on: ubuntu-latest
@@ -66,7 +66,8 @@ jobs:
            username: ubuntu
            key: ${{ secrets.WEB_PRIVATE_KEY }}
            script: |
-             chmod 755 /home/ubuntu/server/web/run.sh
+             chmod 755 /home/ubuntu/server/run.sh
+             chmod 755 /home/ubuntu/server/stop.sh
 
        - name: screen and restart server
          uses: appleboy/ssh-action@master
@@ -76,6 +77,6 @@ jobs:
            key: ${{ secrets.WEB_PRIVATE_KEY }}
            script: |
              #PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
-             cd /home/ubuntu/server/web
+             cd /home/ubuntu/server
              nohup ./stop.sh > /dev/null 2>&1&
              nohup ./run.sh > logs.log 2>logs.log&
