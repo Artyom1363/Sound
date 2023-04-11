@@ -3,7 +3,7 @@ name: Web CI&CD
 on:
   pull_request:
     branches:
-    — main
+    - main
 
 jobs:
   build:
