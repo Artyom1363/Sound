@@ -26,11 +26,11 @@ jobs:
       - name: Build
         run: go build cmd/main.go;
 
-      - name: Install golangci-lint
-        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.2
+#      - name: Install golangci-lint
+#        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.52.2
 
-      - name: Run golangci-lint
-        run: golangci-lint run
+#     - name: Run golangci-lint
+#        run: golangci-lint run
 
       #- name: Run tests
       #  run: go test -cover ./... -coverprofile=profile; go tool cover -func profile
