@@ -1,5 +1,5 @@
 var processActiveSpin = document.getElementById('process-active')
-var processBtn = document.getElementById('process')
+// var processBtn = document.getElementById('process')
 
 function showProcessStart() {
     processActiveSpin.style.display = "block";
@@ -22,14 +22,22 @@ function process(audioLink) {
 
 function processFinish(mess) {
     showProcessStop()
-    initPlayer(mess.audio);
-    initPlayerProcessed(mess.cutAudio);
-    initEditor(mess.text);
+    initPlayer(mess.audio)
+    initPlayerProcessed(mess.cutAudio)
+    initEditor(mess.text)
     initRegions(mess.audioMarkers)
+    initDownload(mess.cutAudio)
 }
 
-processBtn.onclick = function () {
-    mysocket.showMessage()
-}
+processFinish({
+    audio: "fileserver/oJBfrc9SoT_cut.mp3",
+    cutAudio: "fileserver/oJBfrc9SoT_cut.mp3",
+    text: "fileserver/koCRssEDnV.txt",
+    audioMarkers: "fileserver/3eDh5rOdih.txt",
+});
+
+// processBtn.onclick = function () {
+//     mysocket.showMessage()
+// }
 
 

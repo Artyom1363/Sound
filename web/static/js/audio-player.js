@@ -2,6 +2,7 @@ var playBtn = document.getElementById('play')
 // var zoomSlider = document.getElementById('slider')
 
 let wavesurfer = WaveSurfer.create({
+    height: 80,
     container: '#waveform',
     waveColor: '#26f0df',
     progressColor: '#224ab1',
@@ -21,6 +22,7 @@ var playBtn2 = document.getElementById('play-2')
 // var zoomSlider = document.getElementById('slider')
 
 let wavesurfer2 = WaveSurfer.create({
+    height: 80,
     container: '#waveform-2',
     waveColor: '#26f0df',
     progressColor: '#224ab1',

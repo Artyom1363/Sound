@@ -38,7 +38,7 @@ class MySocket{
                 if (mess.status === "success") {
                     processFinish(mess)
                 } else {
-                    alert(mess)
+                    showProcessStop()
                 }
             }
             // alert(event.data)

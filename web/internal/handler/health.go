@@ -3,6 +3,7 @@ package handler
 import (
 	"io"
 	"net/http"
+	"time"
 	"web/internal/config"
 )
 
@@ -13,7 +14,8 @@ const (
 )
 
 func HealthParasite(w http.ResponseWriter, r *http.Request) {
-	resp, err := http.Get(config.ParasiteAPIHealth)
+	client := http.Client{Timeout: time.Second * 5}
+	resp, err := client.Get(config.ParasiteAPIHealth)
 	if err != nil {
 		w.Write([]byte(HealthStatusUnavailable))
 		return
@@ -33,7 +35,8 @@ func HealthParasite(w http.ResponseWriter, r *http.Request) {
 }
 
 func HealthMezdo(w http.ResponseWriter, r *http.Request) {
-	resp, err := http.Get(config.MezdoAPIHealth)
+	client := http.Client{Timeout: time.Second * 5}
+	resp, err := client.Get(config.MezdoAPIHealth)
 	if err != nil {
 		w.Write([]byte(HealthStatusUnavailable))
 		return
@@ -53,7 +56,8 @@ func HealthMezdo(w http.ResponseWriter, r *http.Request) {
 }
 
 func HealthTranscribe(w http.ResponseWriter, r *http.Request) {
-	resp, err := http.Get(config.TranscribeAPIHealth)
+	client := http.Client{Timeout: time.Second * 5}
+	resp, err := client.Get(config.TranscribeAPIHealth)
 	if err != nil {
 		w.Write([]byte(HealthStatusUnavailable))
 		return
