@@ -2,6 +2,7 @@ import re
 import torch
 from transformers import BertTokenizer, BertModel
 from src.models import ParasiteWordsClfHead
+from nltk import tokenize
 
 # PATH_TO_PARASITE_WORDS_CLF_HEAD = '../models/short_classif.pt'
 
@@ -25,43 +26,54 @@ class WordClassifier:
 
     #         self.bad_word_token_ids = [cur_bad_word_id,]
 
-    def classify(self, sentence):
-        sentence = sentence.lower()
-        words_in_sent = re.split('\W+', sentence)
-        tokenized_sent = self.tokenizer(sentence, truncation=True, return_tensors='pt', padding='max_length',
-                                        max_length=512)
+    def classify(self, text):
+        sents = tokenize.sent_tokenize(text)
+        parasite_word_indexes = []
+        words_count = 0
 
-        with torch.no_grad():
-            model_output = self.bert(**tokenized_sent)
-            word_embeddings = model_output[0].squeeze()
+        for sentence in sents:
+            print("sentence: ", sentence)
+            sentence = sentence.lower()
+            words_in_sent = re.split('\W+', sentence)
+            if words_in_sent[-1] == '':
+                words_in_sent = words_in_sent[0:-1]
 
-            predictions = {}
-            counters = {}
+            tokenized_sent = self.tokenizer(sentence, truncation=True, return_tensors='pt', padding='max_length',
+                                            max_length=512)
 
-            for bad_word, meta_data in self.clf_heads.items():
-                indexes_with_parasite_ids = [index for (index, item) in
-                                             enumerate(tokenized_sent['input_ids'][0].tolist()) if
-                                             item == meta_data['id']]
+            with torch.no_grad():
+                model_output = self.bert(**tokenized_sent)
+                word_embeddings = model_output[0].squeeze()
 
-                if len(indexes_with_parasite_ids) == 0:
-                    continue
-                filtered_embeddings = torch.index_select(word_embeddings, 0, torch.tensor(indexes_with_parasite_ids))
-                predictions[bad_word] = meta_data['model'](filtered_embeddings)
+                predictions = {}
+                counters = {}
 
-                predictions[bad_word] = predictions[bad_word].squeeze(1)
-                predictions[bad_word] = (predictions[bad_word] > 0.5).float().tolist()
+                for bad_word, meta_data in self.clf_heads.items():
+                    indexes_with_parasite_ids = [index for (index, item) in
+                                                 enumerate(tokenized_sent['input_ids'][0].tolist()) if
+                                                 item == meta_data['id']]
 
-                counters[bad_word] = -1
+                    if len(indexes_with_parasite_ids) == 0:
+                        continue
+                    filtered_embeddings = torch.index_select(word_embeddings, 0,
+                                                             torch.tensor(indexes_with_parasite_ids))
+                    predictions[bad_word] = meta_data['model'](filtered_embeddings)
 
-            parasite_word_indexes = []
+                    predictions[bad_word] = predictions[bad_word].squeeze(1)
+                    predictions[bad_word] = (predictions[bad_word] > 0.5).float().tolist()
 
-            for idx, word in enumerate(words_in_sent):
-                if word in counters.keys():
-                    counters[word] += 1
-                    if predictions[word][counters[word]] >= 0.9:
-                        parasite_word_indexes.append(idx)
+                    counters[bad_word] = -1
 
-                elif word in self.context_independent_bad_words:
-                    parasite_word_indexes.append(idx)
+                for idx, word in enumerate(words_in_sent):
+                    if word in counters.keys():
+                        counters[word] += 1
+                        if predictions[word][counters[word]] >= 0.9:
+                            parasite_word_indexes.append(words_count + idx)
 
-            return parasite_word_indexes
+                    elif word in self.context_independent_bad_words:
+                        parasite_word_indexes.append(words_count + idx)
+
+            words_count += len(words_in_sent)
+            print("words_count: ", words_count, words_in_sent)
+
+        return parasite_word_indexes
