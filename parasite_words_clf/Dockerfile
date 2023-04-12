@@ -8,10 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN pip install nltk
-
 RUN pip install -e .
-
 
 EXPOSE 8000
 
