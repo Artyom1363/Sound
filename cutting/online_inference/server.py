@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 import logging
 import aiofiles
 # from src.utils import cut_file, speech_file_to_array_fn, ffmpeg_convert, librosa_convert
-from src.utils import cut_file
+from src.utils import cut_file, format_file
 
 SAMPLING_RATE = 16000
 app = FastAPI()
@@ -93,8 +93,10 @@ async def predict(response: FileResponse, request: List[UploadFile] = File(..., 
 
     json_file = open(filename_json, "r")
     data = json.loads(json_file.read())
-    print("DEBUG! DATA:", data)
+    # print("DEBUG! DATA:", data)
+
     out_file = cut_file(query_dir, 'src.mp3', data['redundants'])
+    # format_file(query_dir, 'src.mp3')
     print("DEBUG! OUTPUT FILE: ", out_file)
 
     return FileResponse(out_file)
