@@ -77,11 +77,14 @@ async def predict(response: FileResponse, request: List[UploadFile] = File(..., 
             return f"have not {ext} file"
 
     cur_dir = os.path.dirname(os.path.abspath(__file__))
+
     data_directory = os.path.join(cur_dir, 'data')
     # print(data_directory)
     query_dir = create_query_paths(data_directory)
     filename_mp3 = os.path.join(query_dir, f'src.mp3')
     filename_json = os.path.join(query_dir, f'src.json')
+    filename_beep = os.path.join(cur_dir, 'auxiliary', f'bleeping.mp3')
+    print("filename_beep: ", filename_beep)
 
     async with aiofiles.open(filename_json, 'wb') as out_file:
         content = await files['.json'].read()  # async read
@@ -95,7 +98,7 @@ async def predict(response: FileResponse, request: List[UploadFile] = File(..., 
     data = json.loads(json_file.read())
     # print("DEBUG! DATA:", data)
 
-    out_file = cut_file(query_dir, 'src.mp3', data['redundants'])
+    out_file = cut_file(query_dir, 'src.mp3', data['redundants'], filename_beep)
     # format_file(query_dir, 'src.mp3')
     print("DEBUG! OUTPUT FILE: ", out_file)
 
