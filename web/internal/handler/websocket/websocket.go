@@ -41,7 +41,7 @@ func SocketReaderCreate(w http.ResponseWriter, r *http.Request) {
 func SendMessage(session string, message string) error {
 	con, ok := savedsockets[session]
 	if !ok {
-		log.Printf("no such session in ws storage")
+		log.Printf("websocket: no such session in ws storage")
 		return nil
 	}
 	if err := con.WriteMessage(1, []byte(message)); err != nil {

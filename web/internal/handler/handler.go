@@ -2,6 +2,7 @@ package handler
 
 import (
 	"crypto/md5"
+	"encoding/json"
 	"fmt"
 	gojson "github.com/goccy/go-json"
 	"html/template"
@@ -13,8 +14,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"web/internal/app/markers"
+	"web/internal/app/audiomarkers"
+	"web/internal/app/connectors/cutter"
 	"web/internal/app/pipeline"
+	"web/internal/app/textmarkers"
 	"web/internal/config"
 )
 
@@ -75,6 +78,33 @@ func Process(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+func Render(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("read body: %v", err)
+	}
+
+	type Req struct {
+		Filepath string
+		Markers  audiomarkers.AudioMarkers
+	}
+
+	var req Req
+	if err := json.Unmarshal(body, &req); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("unmarshal body: %v", err)
+	}
+
+	resultPath, err := cutter.Run(req.Filepath, req.Markers)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Printf("cutter: %v", err)
+	}
+
+	w.Write([]byte(resultPath))
+}
+
 func GetText(w http.ResponseWriter, r *http.Request) {
 	//var textBytes []byte
 	text := r.URL.Query().Get("text")
@@ -106,7 +136,7 @@ func GetText(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	enrichedText := markers.EnrichTextWithMarkers(text, parasiteWords, []int{})
+	enrichedText := textmarkers.EnrichTextWithMarkers(text, parasiteWords, []int{})
 
 	w.WriteHeader(http.StatusOK)
 	//w.Write([]byte("Hello from backend. I am <span style=\"background-color: rgb(255, 255, 0);\">golang</span> developer!"))
@@ -116,21 +146,3 @@ func GetText(w http.ResponseWriter, r *http.Request) {
 func GetResultFile(w http.ResponseWriter, r *http.Request) {
 	//resultID := r.URL.Query().Get("resultID")
 }
-
-//func GetResultText(w http.ResponseWriter, r *http.Request) {
-//	resultID := r.URL.Query().Get("resultID")
-//
-//	text, err := getResultText(resultID)
-//	if err != nil {
-//		log.Println(err)
-//		w.WriteHeader(http.StatusInternalServerError)
-//		return
-//	}
-//
-//	profanityIds := parseProfanityMarkers(text)
-//
-//	enrichedText := markers.EnrichTextWithMarkers(text.Text, []int{}, profanityIds)
-//
-//	w.Write([]byte(enrichedText))
-//	w.WriteHeader(http.StatusOK)
-//}

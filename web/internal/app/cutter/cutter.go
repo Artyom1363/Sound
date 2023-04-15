@@ -55,7 +55,7 @@ func processBadWords(inputPath string, transcription *transcribe.TranscribeText,
 	}
 	err := ffmpeg.Filter(append([]*ffmpeg.Stream{audio}, beeps...), "amix", ffmpeg.Args{fmt.Sprintf("inputs=%d", len(badWordsMarkers)+1), "duration=first"}).
 		Output(outputPath).
-		OverWriteOutput().ErrorToStdOut().Run()
+		OverWriteOutput().Run()
 	if err != nil {
 		return "", err
 	}

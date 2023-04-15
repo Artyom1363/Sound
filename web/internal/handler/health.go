@@ -55,6 +55,27 @@ func HealthMezdo(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(HealthStatusOk))
 }
 
+func HealthCutter(w http.ResponseWriter, r *http.Request) {
+	client := http.Client{Timeout: time.Second * 5}
+	resp, err := client.Get(config.CutterAPIHealth)
+	if err != nil {
+		w.Write([]byte(HealthStatusUnavailable))
+		return
+	}
+
+	rspBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		w.Write([]byte(HealthStatusNotReady))
+		return
+	}
+	if string(rspBody) != "\"Service is ready\"" {
+		w.Write([]byte(HealthStatusNotReady))
+		return
+	}
+
+	w.Write([]byte(HealthStatusOk))
+}
+
 func HealthTranscribe(w http.ResponseWriter, r *http.Request) {
 	client := http.Client{Timeout: time.Second * 5}
 	resp, err := client.Get(config.TranscribeAPIHealth)

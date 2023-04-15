@@ -21,12 +21,15 @@ func InitRouter() {
 	r.HandleFunc("/getText", handler.GetText)
 	r.HandleFunc("/getResultFile", handler.GetResultFile)
 	//r.HandleFunc("/getResultText", handler.GetResultText)
+
 	r.HandleFunc("/health/parasite", handler.HealthParasite)
 	r.HandleFunc("/health/transcribe", handler.HealthTranscribe)
 	r.HandleFunc("/health/mezdo", handler.HealthMezdo)
+	r.HandleFunc("/health/cutter", handler.HealthCutter)
 
 	r.HandleFunc("/upload", handler.Upload)
 	r.HandleFunc("/process", handler.Process)
+	r.HandleFunc("/render", handler.Render)
 
 	r.Use(middleware.Session)
 

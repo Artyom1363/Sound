@@ -1,3 +1,5 @@
+let srcFileName;
+
 window.addEventListener( "load", function () {
     function sendData() {
         const XHR = new XMLHttpRequest();
@@ -16,7 +18,7 @@ window.addEventListener( "load", function () {
         // Define what happens in case of error
         XHR.addEventListener( "error", function( event ) {
             showLoadStop();
-            alert( 'Oops! Something went wrong.' );
+            showUploadError();
         } );
 
         // Set up our request
@@ -27,12 +29,14 @@ window.addEventListener( "load", function () {
     }
 
     // Access the form element...
-    const form = document.getElementById( "myForm" );
+    const form = document.getElementById("myForm");
 
     // ...and take over its submit event.
     form.addEventListener( "submit", function ( event ) {
         event.preventDefault();
         showLoadStart();
+        hideUploadError();
+        srcFileName = form.uploadfile.value.split(/(\\|\/)/g).pop()
 
         sendData();
     } );
@@ -40,6 +44,8 @@ window.addEventListener( "load", function () {
 
 var loadBtn = document.getElementById('load')
 var loadActiveBtn = document.getElementById('load-active')
+var loadFileField = document.getElementById('upfile')
+var uploadError = document.getElementById('upload-error')
 
 function showLoadStart () {
     loadBtn.style.display = "none";
@@ -49,4 +55,12 @@ function showLoadStart () {
 function showLoadStop () {
     loadBtn.style.display = "block";
     loadActiveBtn.style.display = "none";
+}
+
+function showUploadError() {
+    uploadError.style.display = "block";
+}
+
+function hideUploadError() {
+    uploadError.style.display = "none";
 }

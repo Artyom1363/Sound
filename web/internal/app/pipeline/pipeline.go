@@ -3,12 +3,12 @@ package pipeline
 import (
 	"fmt"
 	"log"
+	"web/internal/app/audiomarkers"
+	"web/internal/app/connectors/cutter"
 	"web/internal/app/connectors/mezdo"
 	"web/internal/app/connectors/parasite"
 	"web/internal/app/connectors/transcribe"
-	"web/internal/app/cutter"
-	"web/internal/app/files"
-	"web/internal/app/markers"
+	"web/internal/app/textmarkers"
 	"web/internal/handler/websocket"
 )
 
@@ -20,66 +20,88 @@ type Pipeline struct {
 
 	parasiteWordsInds []int
 	badWordsInds      []int
+	mezdoSegments     mezdo.MezdoItems
+	audioMarkers      audiomarkers.AudioMarkers
 
 	transcription *transcribe.TranscribeText
 
 	resultAudioFilePath    string
 	resultCutAudioFilePath string
 	resultTextFilePath     string
-	resultAudioMarkers     string
+	resultAudioMarkersPath string
+
+	checker *Checker
 }
 
 func New(session string, srcFilePath string) *Pipeline {
 	return &Pipeline{
-		userSession:         session,
 		sourceAudioFilePath: srcFilePath,
+		userSession:         session,
 	}
 }
 
 func (p *Pipeline) Start() {
 	var err error
-	p.resultTextFilePath, p.resultAudioFilePath, p.transcription, p.badWordsInds, p.transcribeResultID, err = transcribe.Run(p.sourceAudioFilePath)
-	if err != nil {
-		log.Printf("transpile: %v", err)
-		mess := fmt.Sprintf(`{"status":"error", "source":"process", "error":"%s"}`, err)
-		websocket.SendMessage(p.userSession, mess)
+	checker := NewChecker(p.userSession)
+
+	if p.resultTextFilePath, p.resultAudioFilePath, p.transcription, p.badWordsInds, p.transcribeResultID, err =
+		transcribe.Run(p.sourceAudioFilePath); !checker.processErr(err, "transpile") {
 		return
 	}
 
-	p.parasiteWordsInds, err = parasite.Run(p.transcription.Text)
-	if err != nil {
-		log.Printf("parasite: %v", err)
-		mess := fmt.Sprintf(`{"status":"error", "source":"process", "error":"%s"}`, err)
-		websocket.SendMessage(p.userSession, mess)
+	if p.parasiteWordsInds, err =
+		parasite.Run(p.transcription.Text); !checker.processErr(err, "parasite") {
 		return
 	}
 
-	p.resultAudioMarkers, err = mezdo.Run(p.transcribeResultID)
-	if err != nil {
-		log.Printf("mezdo: %v", err)
-		mess := fmt.Sprintf(`{"status":"error", "source":"process", "error":"%s"}`, err)
-		websocket.SendMessage(p.userSession, mess)
+	if p.mezdoSegments, err =
+		mezdo.Run(p.transcribeResultID); !checker.processErr(err, "mezdo") {
 		return
 	}
 
-	p.transcription.Text = markers.EnrichTextWithMarkers(p.transcription.Text, p.parasiteWordsInds, p.badWordsInds)
-	p.resultTextFilePath, err = files.SaveToTextFile([]byte(p.transcription.Text))
-	if err != nil {
-		log.Printf("save result: %v", err)
-		mess := fmt.Sprintf(`{"status":"error", "source":"process", "error":"%s"}`, err)
-		websocket.SendMessage(p.userSession, mess)
+	if p.resultTextFilePath, err =
+		textmarkers.Run(p.transcription.Text, p.parasiteWordsInds, p.badWordsInds); !checker.processErr(err, "textmarkers") {
 		return
 	}
 
-	p.resultCutAudioFilePath, err = cutter.Run(p.resultAudioFilePath, p.transcription, p.badWordsInds, p.parasiteWordsInds)
-	if err != nil {
-		log.Printf("cut audio: %v", err)
-		mess := fmt.Sprintf(`{"status":"error", "source":"process", "error":"%s"}`, err)
-		websocket.SendMessage(p.userSession, mess)
+	if p.audioMarkers, p.resultAudioMarkersPath, err =
+		audiomarkers.Run(p.transcription, p.parasiteWordsInds, p.badWordsInds, p.mezdoSegments); !checker.processErr(err, "audiomarkers") {
 		return
 	}
 
-	mess := fmt.Sprintf(`{"status":"success", "source":"process", "audio":"%s", "cutAudio":"%s", "text":"%s", "audioMarkers":"%s"}`, p.resultAudioFilePath, p.resultCutAudioFilePath, p.resultTextFilePath, p.resultAudioMarkers)
+	//if p.resultCutAudioFilePath, err =
+	//	cutter.Run(p.resultAudioFilePath, p.transcription, p.badWordsInds, p.parasiteWordsInds); !checker.processErr(err, "cutter") {
+	//	return
+	//}
+	if p.resultCutAudioFilePath, err =
+		cutter.Run(p.resultAudioFilePath, p.audioMarkers); !checker.processErr(err, "cutter") {
+		return
+	}
+
+	mess := fmt.Sprintf(`{"status":"success", "source":"process", "audio":"%s", "cutAudio":"%s", "text":"%s", "audioMarkers":"%s"}`, p.resultAudioFilePath, p.resultCutAudioFilePath, p.resultTextFilePath, p.resultAudioMarkersPath)
 	websocket.SendMessage(p.userSession, mess)
 	log.Printf("pipline finished")
+}
+
+type Checker struct {
+	userSession string
+}
+
+func NewChecker(us string) *Checker {
+	return &Checker{
+		userSession: us,
+	}
+}
+
+func (c *Checker) processErr(err error, module string) bool {
+	if err != nil {
+		log.Printf("module: %v", err)
+		mess := fmt.Sprintf(`{"status":"error", "source":"process", "module":"%s", "error":"%s"}`, module, err)
+		websocket.SendMessage(c.userSession, mess)
+		return false
+	}
+	mess := fmt.Sprintf(`{"status":"info", "source":"process", "module":"%s"}`, module)
+	websocket.SendMessage(c.userSession, mess)
+
+	return true
 }

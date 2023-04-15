@@ -207,18 +207,6 @@ func getResultAudioFile(resultID int) (string, error) {
 
 	return filePath, nil
 
-	//
-	//bodyStr, err := strconv.Unquote(string(body))
-	//
-	//if bodyStr == "file not ready!" {
-	//	return "", fmt.Errorf("file not ready")
-	//}
-
-	//bodyStr := fmt.Sprintf(string(body))
-	//var text TranscribeText
-	//if err := gojson.Unmarshal([]byte(bodyStr), &text); err != nil {
-	//	return nil, fmt.Errorf("unmarshal resp: %v", err)
-	//}
 }
 
 type SingleWorld struct {

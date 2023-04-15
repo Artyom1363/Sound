@@ -1,8 +1,9 @@
-package markers
+package textmarkers
 
 import (
 	"fmt"
 	"strings"
+	"web/internal/app/files"
 )
 
 const markerParasite = "<span style=\"background-color: rgb(255, 255, 0);\">%s</span>"
@@ -19,4 +20,9 @@ func EnrichTextWithMarkers(text string, parasiteMarkers []int, profanityMarkers 
 		words[marker] = fmt.Sprintf(markerProfanity, words[marker])
 	}
 	return strings.Join(words, " ")
+}
+
+func Run(text string, parasiteMarkers []int, profanityMarkers []int) (string, error) {
+	enrichedText := EnrichTextWithMarkers(text, parasiteMarkers, profanityMarkers)
+	return files.SaveToTextFile([]byte(enrichedText))
 }

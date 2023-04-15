@@ -35,10 +35,17 @@ class MySocket{
             // this.showMessage(event.data,false);
             var mess = JSON.parse(event.data)
             if (mess.source === "process") {
-                if (mess.status === "success") {
-                    processFinish(mess)
-                } else {
-                    showProcessStop()
+                switch (mess.status) {
+                    case "success":
+                        processFinish(mess)
+                        break;
+                    case "info":
+                        processInfo(mess)
+                        break;
+                    case "error":
+                        processInfo(mess)
+                        showProcessPause()
+                        break;
                 }
             }
             // alert(event.data)

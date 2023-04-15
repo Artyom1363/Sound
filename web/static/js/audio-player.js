@@ -6,7 +6,7 @@ let wavesurfer = WaveSurfer.create({
     container: '#waveform',
     waveColor: '#26f0df',
     progressColor: '#224ab1',
-    barWidth: 3,
+    barWidth: 1,
     barHeight: 1, // the height of the wave
     backend: 'MediaElement',
     plugins: [
@@ -26,7 +26,7 @@ let wavesurfer2 = WaveSurfer.create({
     container: '#waveform-2',
     waveColor: '#26f0df',
     progressColor: '#224ab1',
-    barWidth: 3,
+    barWidth: 1,
     barHeight: 1, // the height of the wave
     backend: 'MediaElement',
     plugins: [
@@ -37,9 +37,6 @@ let wavesurfer2 = WaveSurfer.create({
 playBtn2.onclick = function (){
     wavesurfer2.playPause();
 }
-
-
-
 
 // pleerBlock1.style.display = "block"
 // wavesurfer.load(fileServerAPI + "/static/media/example.mp3");
@@ -78,20 +75,46 @@ function initPlayerProcessed(cutAudio) {
 //     }]
 //
 // initRegions(regs);
+let regionsCounts;
 
 function initRegions(filePath) {
     fetch(fileServerAPI + filePath).then(async response => {
         var regs = JSON.parse(await response.text())
-
-        for (r of regs) {
+        regionsCounts = 0;
+        for (region of regs) {
             wavesurfer.addRegion({
-                start: r.start,
-                end: r.end,
+                id: `${regionsCounts}`,
+                start: region.Start,
+                end: region.End,
                 loop: false,
-                color: 'hsla(0,2%,32%,0.5)'
+                color: getRegionColorByType(region.Type)
             });
+            regionsCounts++;
         }
+        wavesurfer.region
     }).catch(err => {
         alert(err)
     })
+}
+
+function getRegionColorByType(type) {
+    switch (type){
+        case "bad":
+            return 'hsla(0, 100%, 50%, 0.4)'
+        case "parasite":
+            return 'hsla(50, 100%, 50%, 0.4)'
+        case "mezdo":
+            return 'hsla(169, 0%, 50%, 0.4)'
+    }
+}
+
+function getRegionTypeByColor(color) {
+    switch (color){
+        case "hsla(0, 100%, 50%, 0.4)":
+            return "bad"
+        case "hsla(50, 100%, 50%, 0.4)":
+            return "parasite"
+        case "hsla(169, 0%, 50%, 0.4)":
+            return "mezdo"
+    }
 }
