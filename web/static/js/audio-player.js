@@ -91,11 +91,36 @@ function initRegions(filePath) {
             });
             regionsCounts++;
         }
-        wavesurfer.region
     }).catch(err => {
         alert(err)
     })
 }
+
+var addBadMarkerBtn = document.getElementById('marker-add-bad')
+var addParasiteMarkerBtn = document.getElementById('marker-add-parasite')
+
+addParasiteMarkerBtn.onclick = function () {
+    wavesurfer.addRegion({
+        id: `${regionsCounts}`,
+        start: 0,
+        end: 0.5,
+        loop: false,
+        color: getRegionColorByType("parasite")
+    });
+    regionsCounts++;
+}
+
+addBadMarkerBtn.onclick = function () {
+    wavesurfer.addRegion({
+        id: `${regionsCounts}`,
+        start: 0,
+        end: 0.5,
+        loop: false,
+        color: getRegionColorByType("bad")
+    });
+    regionsCounts++;
+}
+
 
 function getRegionColorByType(type) {
     switch (type){

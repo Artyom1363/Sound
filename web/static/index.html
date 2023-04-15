@@ -40,14 +40,26 @@
 
     <div class="container" id="pleer-1" style="display: none;">
         <h5>Проанализированное аудио</h5>
-        <div id="waveform"></div>
-        <button class="btn btn-primary" id="play" data-action="play">Play/Pause</button>
+        <div class="row">
+            <div class="col-1">
+                <svg xmlns="http://www.w3.org/2000/svg" id="marker-add-bad" width="30" height="30" style="color:red;" fill="currentColor" class="bi bi-align-middle" viewBox="0 0 16 16">
+                    <path d="M6 13a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v10zM1 8a.5.5 0 0 0 .5.5H6v-1H1.5A.5.5 0 0 0 1 8zm14 0a.5.5 0 0 1-.5.5H10v-1h4.5a.5.5 0 0 1 .5.5z"/>
+                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" id="marker-add-parasite" width="30" height="30" style="color:#ffd900;" fill="currentColor" class="bi bi-align-middle" viewBox="0 0 16 16">
+                    <path d="M6 13a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v10zM1 8a.5.5 0 0 0 .5.5H6v-1H1.5A.5.5 0 0 0 1 8zm14 0a.5.5 0 0 1-.5.5H10v-1h4.5a.5.5 0 0 1 .5.5z"/>
+                </svg>
+                <button class="btn btn-primary" id="play" data-action="play">Play/Pause</button>
+            </div>
+            <div class="col">
+                <div id="waveform"></div>
+            </div>
+        </div>
 <!--        <div class="col-sm-3">-->
 <!--            <input data-action="zoom" #slider type="range" min="20" max="1000" value="0" style="width: 100%">-->
 <!--        </div>-->
     </div>
 
-    <div class="container" id="text-editor" style="display: none;">
+    <div class="container mt-2" id="text-editor" style="display: none;">
         <form method="post">
             <textarea id="summernote" name="editordata"></textarea>
         </form>
