@@ -13,7 +13,7 @@
                 <img class="logo" src="media/logo.svg">
 <!--                <input class="btn btn-outline-success my-2 my-sm-0" id="process" value="Process">-->
                 <form id="myForm">
-                    <div class="d-flex">
+                    <div class="d-flex" id="upload-form">
                     <input class="file-input form-control mr-sm-2" type="file" id="upfile" name="uploadfile" accept="audio/mp3" required/>
                     <input class="btn btn-outline-success my-2 my-sm-0" type="submit" id="load" value="Загрузить">
                     <button class="btn btn-success" type="button" id="load-active" style="display: none;" disabled>
@@ -23,10 +23,31 @@
                     <div id="upload-error" style="display: none; color:red;">Ошибка загрузки. Перезагрузите страницу или попробуйте позже.</div>
                     <input type="hidden" name="token" value="{{.}}"/>
                 </form>
-
         </div>
     </nav>
 
+
+<!--    Welcome block-->
+    <div class="container welcome position-relative">
+            <div class="position-absolute top-0 end-0">
+                <div class="note" id="note-upload">
+                    <p>Для начала работы загрузите аудио.</p>
+                    <p>Упс.. Временно просим вас не загружать аудио длительностью дольше 1 минуты.
+                        Наши сервера могут не выдержать такой нагрузки.</p>
+                </div>
+            </div>
+            <div class="welcome-title position-absolute top-50 start-50 translate-middle">
+                <h2>Используйте инструменты искуственного интеллекта для обработки вашего голоса <span>&#129327;</span></h2>
+                <span class="badge rounded-pill" style="background-color:#FFBE0B;">Подавление шумов</span>
+                <span class="badge rounded-pill" style="background-color:#FF006E;">Запикивание матов</span>
+                <span class="badge rounded-pill" style="background-color:#3A86FF;">Обработка междометий</span>
+                <span class="badge rounded-pill" style="background-color:#FB5607;">Общее улучшение звука</span>
+                <span class="badge rounded-pill" style="background-color:#8338EC;">Удаление слов паразитов</span>
+            </div>
+            <div class="note position-absolute bottom-0 start-0" id="note-health">
+                <p>Здесь вы можете узнать состояние наших сервисов. Если что-то упало, обязательно сообщите &#128521; (tg: @grv_nikita)</p>
+            </div>
+    </div>
 
     <div class="container" id="process-active" style="display: none;">
             <div id="process-active-info">
@@ -87,8 +108,8 @@
 
 
 
-    <div class="container fixed-bottom">
-        <footer class="d-flex flex-wrap align-items-center py-3 my-4 border-top">
+    <nav class="container fixed-bottom" id="foot">
+        <nav class="navbar flex-wrap align-items-center py-3 my-4 border-top">
             <div class="px-4">
                 <svg id="health-api-transcribe" xmlns="http://www.w3.org/2000/svg" style="color: grey;" width="16" height="16" fill="currentColor" class="bi bi-circle-fill" viewBox="0 0 16 16">
                     <circle cx="8" cy="8" r="8"/>
@@ -113,8 +134,8 @@
                 </svg>
                 <span>API обработки аудио</span>
             </div>
-        </footer>
-    </div>
+<!--        </footer>-->
+    </nav>
 </body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
 <!--    <script src="libs/wavesurfer.js"></script>-->
@@ -126,6 +147,7 @@
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
+    <script src="libs/leader-line.min.js"></script>
 
     <script src="js/config.js"></script>
     <script src="js/api.js"></script>
@@ -136,5 +158,7 @@
     <script src="js/health.js"></script>
     <script src="js/download.js"></script>
     <script src="js/process.js"></script>
+    <script src="js/swoopyArrows.js"></script>
+    <script src="js/arrows.js"></script>
 
 </html>
