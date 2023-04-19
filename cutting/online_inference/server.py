@@ -48,13 +48,13 @@ def read_root():
 
 
 @app.on_event("startup")
-def loading_model():
-    pass
+def init():
+    logging.basicConfig(level="INFO")
 
 
 @app.get("/health")
 def read_health():
-    return "Service is not ready" if model is None else "Service is ready"
+    return "Service is ready"
 
 
 @app.post("/cut/")

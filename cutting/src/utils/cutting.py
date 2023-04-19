@@ -1,4 +1,5 @@
 from pydub import AudioSegment
+import logging
 import os
 
 
@@ -15,10 +16,12 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
     print(os.getcwd())
     bleep = AudioSegment.from_file(file_name_beep, format="mp3")
     bleep = bleep[1000:2000]
+    redundants = sorted(redundants, key=lambda d: d['start'])
+    logging.info(f"Sorted redundants: {redundants}")
 
     for redundant in reversed(redundants):
-        start_redundant = max(redundant['start'] * 1000 - 200, 0)
-        end_redundant = redundant['end'] * 1000 + 100
+        start_redundant = max(redundant['start'] * 1000 - 100, 0)
+        end_redundant = redundant['end'] * 1000 + 50
         redundant_filler = redundant['filler']
 
         if redundant_filler == 'bleep':
