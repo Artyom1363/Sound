@@ -13,11 +13,15 @@ func EnrichTextWithMarkers(text string, parasiteMarkers []int, profanityMarkers 
 	text = strings.TrimSpace(text)
 	words := strings.Split(text, " ")
 	for _, marker := range parasiteMarkers {
-		words[marker] = fmt.Sprintf(markerParasite, words[marker])
+		if len(words) > marker {
+			words[marker] = fmt.Sprintf(markerParasite, words[marker])
+		}
 	}
 
 	for _, marker := range profanityMarkers {
-		words[marker] = fmt.Sprintf(markerProfanity, words[marker])
+		if len(words) > marker {
+			words[marker] = fmt.Sprintf(markerProfanity, words[marker])
+		}
 	}
 	return strings.Join(words, " ")
 }
