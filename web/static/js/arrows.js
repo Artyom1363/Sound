@@ -1,4 +1,4 @@
-new LeaderLine(
+var lineNoteHealth = new LeaderLine(
     document.getElementById('note-health'),
     document.getElementById('foot'),
     {
@@ -8,7 +8,7 @@ new LeaderLine(
     }
 );
 
-new LeaderLine(
+var lineNoteUpload = new LeaderLine(
     document.getElementById('note-upload'),
     document.getElementById('upload-form'),
     {

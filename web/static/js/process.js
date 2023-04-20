@@ -1,12 +1,17 @@
 var processActiveBlock = document.getElementById('process-active')
 var processActiveSpin = document.getElementById('process-active-spin')
 var processActiveInfo = document.getElementById('process-active-info')
+var welcomeBlock = document.getElementById('welcome-block')
 
 function showProcessStart() {
     processActiveBlock.style.display = "block";
     processActiveSpin.style.display = "block";
     loadBtn.disabled = true;
     loadFileField.disabled = true;
+
+    welcomeBlock.style.display = "none";
+    lineNoteUpload.hide();
+    lineNoteHealth.hide();
 
     textEditorBlock.style.display = "none";
     pleerBlock.style.display = "none";
