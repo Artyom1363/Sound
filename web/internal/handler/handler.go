@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"github.com/cassava/lackey/audio/mp3"
 	gojson "github.com/goccy/go-json"
 	"html/template"
 	"io"
@@ -20,6 +21,8 @@ import (
 	"web/internal/app/textmarkers"
 	"web/internal/config"
 )
+
+const MaxAudioDuration = time.Second * 120
 
 func MeHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
@@ -57,6 +60,23 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 		}
 		defer f.Close()
 		io.Copy(f, file)
+
+		meta, err := mp3.ReadMetadata("fileserver/" + handler.Filename)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(fmt.Sprintf("Неверный формат файла. Загружайте только mp3!")))
+			return
+		}
+		if meta.Length() > MaxAudioDuration {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(fmt.Sprintf("Лимит продолжительности аудио: 2 минуты. "+
+				"Продолжительность загруженного файла: %f секунд", meta.Length().Seconds(),
+			)))
+			return
+		}
+		//stat, _ := f.Stat()
+		log.Print(meta)
+		log.Print(err)
 
 		w.Write([]byte("/fileserver/" + handler.Filename))
 	}

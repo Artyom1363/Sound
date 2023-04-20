@@ -102,6 +102,5 @@ func (c *Checker) processErr(err error, module string) bool {
 	}
 	mess := fmt.Sprintf(`{"status":"info", "source":"process", "module":"%s"}`, module)
 	websocket.SendMessage(c.userSession, mess)
-
 	return true
 }

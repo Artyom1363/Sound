@@ -25,19 +25,23 @@ const (
 func Run(transcription *transcribe.TranscribeText, parasiteMarkers []int, badMarkers []int, mezdoMarkers mezdo.MezdoItems) (AudioMarkers, string, error) {
 	audioMarkers := make(AudioMarkers, 0, len(parasiteMarkers)+len(badMarkers)+len(mezdoMarkers))
 	for _, marker := range parasiteMarkers {
-		audioMarkers = append(audioMarkers, AudioMarker{
-			Start: transcription.Words[marker].Start,
-			End:   transcription.Words[marker].End,
-			Type:  TypeParasite,
-		})
+		if len(transcription.Words) > marker {
+			audioMarkers = append(audioMarkers, AudioMarker{
+				Start: transcription.Words[marker].Start,
+				End:   transcription.Words[marker].End,
+				Type:  TypeParasite,
+			})
+		}
 	}
 
 	for _, marker := range badMarkers {
-		audioMarkers = append(audioMarkers, AudioMarker{
-			Start: transcription.Words[marker].Start,
-			End:   transcription.Words[marker].End,
-			Type:  TypeBad,
-		})
+		if len(transcription.Words) > marker {
+			audioMarkers = append(audioMarkers, AudioMarker{
+				Start: transcription.Words[marker].Start,
+				End:   transcription.Words[marker].End,
+				Type:  TypeBad,
+			})
+		}
 	}
 
 	for _, marker := range mezdoMarkers {

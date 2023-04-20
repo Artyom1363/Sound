@@ -34,6 +34,7 @@ window.addEventListener( "load", function () {
     // ...and take over its submit event.
     form.addEventListener( "submit", function ( event ) {
         event.preventDefault();
+        // getAudioDuration(form.uploadfile.value);
         showLoadStart();
         hideUploadError();
         srcFileName = form.uploadfile.value.split(/(\\|\/)/g).pop()
@@ -63,4 +64,33 @@ function showUploadError() {
 
 function hideUploadError() {
     uploadError.style.display = "none";
+}
+
+
+// Create a non-dom allocated Audio element
+var audio = document.createElement('audio');
+
+// Add a change event listener to the file input
+function getAudioDuration(file) {
+    var reader = new FileReader();
+
+    console.log("Start" + file);
+    if (file) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            audio.src = file;
+            audio.addEventListener('loadedmetadata', function(){
+                // Obtain the duration in seconds of the audio file (with milliseconds as well, a float value)
+                var duration = audio.duration;
+
+                // example 12.3234 seconds
+                console.log("The duration of the song is of: " + duration + " seconds");
+                // Alternatively, just display the integer value with
+                // parseInt(duration)
+                // 12 seconds
+            },false);
+        };
+        reader.readAsDataURL(file);
+    }
 }
