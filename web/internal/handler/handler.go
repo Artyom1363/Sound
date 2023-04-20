@@ -61,7 +61,7 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 		defer f.Close()
 		io.Copy(f, file)
 
-		meta, err := mp3.ReadMetadata("fileserver/" + handler.Filename)
+		meta, err := mp3.ReadMetadata(filePath)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(fmt.Sprintf("Неверный формат файла. Загружайте только mp3!")))
@@ -74,9 +74,7 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 			)))
 			return
 		}
-		//stat, _ := f.Stat()
-		log.Print(meta)
-		log.Print(err)
+		log.Printf("Audio duration: %f sec.", meta.Length().Seconds())
 
 		w.Write([]byte("/fileserver/" + handler.Filename))
 	}
