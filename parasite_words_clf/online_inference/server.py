@@ -1,5 +1,6 @@
 import os
 import uvicorn
+import nltk
 from fastapi import FastAPI
 import logging
 from pathlib import Path
@@ -15,6 +16,11 @@ from entities import (
 app = FastAPI()
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+logging_handler = logging.StreamHandler()
+logging_handler.setLevel(logging.INFO)
+logger.addHandler(logging_handler)
 
 PATH_TO_PARASITE_WORDS_CLF_HEAD = 'online_inference/models/short_classif.pt'
 
@@ -37,6 +43,7 @@ def read_root():
 
 @app.on_event("startup")
 def loading_model():
+    nltk.download('punkt')
     global model
     # model_path = os.getenv("PATH_TO_MODEL")
     model_path = PATH_TO_PARASITE_WORDS_CLF_HEAD
