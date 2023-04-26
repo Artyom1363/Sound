@@ -54,3 +54,9 @@ m1 {
     position: relative;
     bottom: 0;
 }
+
+.zoom {
+    margin-right: auto;
+    margin-left: auto;
+    width: 250px;
+}

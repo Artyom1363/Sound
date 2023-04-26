@@ -60,17 +60,6 @@ async function processFinish(mess) {
     initDownload(mess.cutAudio)
 }
 
-// initPlayer("fileserver/KqnHSPrsUP.mp3")
-// initPlayerProcessed("fileserver/KqnHSPrsUP.mp3")
-// initRegions("fileserver/hFMN7JPEdn.txt")
-// initEditor("fileserver/P5fPko0zb1.txt")
-// initDownload("fileserver/KqnHSPrsUP.mp3");
-//
-// lastProcess = {
-//     audio: "fileserver/KqnHSPrsUP.mp3",
-// }
-// new comment
-
 function processInfo(mess) {
     var infoDiv = document.createElement('div');
     // div.setAttribute('class', 'post block bc2');
@@ -132,4 +121,17 @@ function processInfo(mess) {
 //     mysocket.showMessage()
 // }
 
+// Test
 
+// showProcessStart();
+// showProcessStop();
+//
+// initPlayer("fileserver/KqnHSPrsUP.mp3")
+// initPlayerProcessed("fileserver/KqnHSPrsUP.mp3")
+// // initRegions("fileserver/hFMN7JPEdn.txt")
+// initEditor("fileserver/P5fPko0zb1.txt")
+// initDownload("fileserver/KqnHSPrsUP.mp3");
+//
+// lastProcess = {
+//     audio: "fileserver/KqnHSPrsUP.mp3",
+// }

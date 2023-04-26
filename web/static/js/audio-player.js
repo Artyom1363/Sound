@@ -38,16 +38,14 @@ playBtn2.onclick = function (){
     wavesurfer2.playPause();
 }
 
-// pleerBlock1.style.display = "block"
-// wavesurfer.load(fileServerAPI + "/static/media/example.mp3");
-
 var pleerBlock = document.getElementById('pleer-1')
+var zoomSlider = document.getElementById('zoom-1')
+var zoomSlider2 = document.getElementById('zoom-2')
 
 function initPlayer(audio) {
-    // zoomSlider.oninput = function (){
-    //     wavesurfer.zoom(Number(this.value));
-    // };
-    // wavesurfer.
+    zoomSlider.oninput = function (){
+        wavesurfer.zoom(Number(this.value));
+    };
 
     pleerBlock.style.display = "block"
     wavesurfer.load(fileServerAPI + audio);
@@ -56,14 +54,20 @@ function initPlayer(audio) {
 var pleerProcessedBlock = document.getElementById('pleer-2')
 
 function initPlayerProcessed(cutAudio) {
-    // zoomSlider.oninput = function (){
-    //     wavesurfer.zoom(Number(this.value));
-    // };
-    // wavesurfer.
+    zoomSlider2.oninput = function (){
+        wavesurfer2.zoom(Number(this.value));
+    };
 
     pleerProcessedBlock.style.display = "block"
     wavesurfer2.load(fileServerAPI + cutAudio);
 }
+
+// wavesurfer.on('region-play', function(region) {
+//     region.once('out', function() {
+//         wavesurfer.play(region.start);
+//         wavesurfer.pause();
+//     });
+// });
 
 // let regs = [{
 //     start: 2.68,
@@ -75,71 +79,3 @@ function initPlayerProcessed(cutAudio) {
 //     }]
 //
 // initRegions(regs);
-let regionsCounts;
-
-function initRegions(filePath) {
-    fetch(fileServerAPI + filePath).then(async response => {
-        var regs = JSON.parse(await response.text())
-        regionsCounts = 0;
-        for (region of regs) {
-            wavesurfer.addRegion({
-                id: `${regionsCounts}`,
-                start: region.Start,
-                end: region.End,
-                loop: false,
-                color: getRegionColorByType(region.Type)
-            });
-            regionsCounts++;
-        }
-    }).catch(err => {
-        alert(err)
-    })
-}
-
-var addBadMarkerBtn = document.getElementById('marker-add-bad')
-var addParasiteMarkerBtn = document.getElementById('marker-add-parasite')
-
-addParasiteMarkerBtn.onclick = function () {
-    wavesurfer.addRegion({
-        id: `${regionsCounts}`,
-        start: 0,
-        end: 0.5,
-        loop: false,
-        color: getRegionColorByType("parasite")
-    });
-    regionsCounts++;
-}
-
-addBadMarkerBtn.onclick = function () {
-    wavesurfer.addRegion({
-        id: `${regionsCounts}`,
-        start: 0,
-        end: 0.5,
-        loop: false,
-        color: getRegionColorByType("bad")
-    });
-    regionsCounts++;
-}
-
-
-function getRegionColorByType(type) {
-    switch (type){
-        case "bad":
-            return 'hsla(0, 100%, 50%, 0.4)'
-        case "parasite":
-            return 'hsla(50, 100%, 50%, 0.4)'
-        case "mezdo":
-            return 'hsla(169, 0%, 50%, 0.4)'
-    }
-}
-
-function getRegionTypeByColor(color) {
-    switch (color){
-        case "hsla(0, 100%, 50%, 0.4)":
-            return "bad"
-        case "hsla(50, 100%, 50%, 0.4)":
-            return "parasite"
-        case "hsla(169, 0%, 50%, 0.4)":
-            return "mezdo"
-    }
-}
