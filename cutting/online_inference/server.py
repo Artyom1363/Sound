@@ -7,22 +7,28 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
 import logging
 import aiofiles
-# from src.utils import cut_file, speech_file_to_array_fn, ffmpeg_convert, librosa_convert
 from src.utils import cut_file, format_file
 
-SAMPLING_RATE = 16000
+BLEEPING_SOUNDS_DIR = 'bleeping_sounds'
+LOG_FILENAME = '/var/log/cutting.log'
+
 app = FastAPI()
 
-model_name_or_path = "jonatasgrosman/wav2vec2-large-xlsr-53-russian"
-pooling_mode = "mean"
-label_list = ['Breath', 'Laughter', 'Music', 'Uh', 'Um', 'Words']
-num_labels = 6
 
-HOST = "95.64.151.158"
-PORT = "8000"
-URL = f"http://{HOST}:{PORT}"
+def set_up_logger(logger):
+    strfmt = '%(asctime)s\t%(name)s\t%(levelname)s\t>\t%(message)s'
+    datefmt = '%Y-%m-%d %H:%M:%S'
+    formatter = logging.Formatter(fmt=strfmt, datefmt=datefmt)
 
-logger = logging.getLogger(__name__)
+    # file_handler = logging.FileHandler(LOG_FILENAME)
+    file_handler = logging.StreamHandler()
+    file_handler.setLevel('DEBUG')
+    file_handler.setFormatter(formatter)
+
+    # print("__name__ in server: ", __name__)
+    logger.setLevel('DEBUG')
+    logger.addHandler(file_handler)
+    # print("logger.handlers: ", logger.handlers)
 
 
 def create_query_paths(data_directory: str) -> Tuple[str, str]:
@@ -32,8 +38,10 @@ def create_query_paths(data_directory: str) -> Tuple[str, str]:
     2. data_directory/gaps_wav
     :return: query_dir
     """
+    logger = logging.getLogger(__name__)
+
     timestr = time.strftime("%Y-%m-%d-%H-%M-%S")
-    print("cur_dir is: ", data_directory)
+    logger.debug(f'cur_dir is: {data_directory}')
 
     query_dir = os.path.join(data_directory, timestr)
     # fragments_path_mp3 = os.path.join(query_dir, "files")
@@ -49,7 +57,8 @@ def read_root():
 
 @app.on_event("startup")
 def init():
-    logging.basicConfig(level="INFO")
+    logger = logging.getLogger(__name__)
+    set_up_logger(logger)
 
 
 @app.get("/health")
@@ -59,11 +68,11 @@ def read_health():
 
 @app.post("/cut/")
 async def predict(response: FileResponse, request: List[UploadFile] = File(..., ext_whitelist=["json", "mp3"])):
-    # print()
+    logger = logging.getLogger(__name__)
     files = {}
     extensions = ['.json', '.mp3']
     for file in request:
-        print(file.content_type)
+        logger.debug(f'got file: {file.content_type}')
         filename, file_extension = os.path.splitext(file.filename)
         if file_extension in extensions and file_extension not in files.keys():
             files[file_extension] = file
@@ -79,12 +88,11 @@ async def predict(response: FileResponse, request: List[UploadFile] = File(..., 
     cur_dir = os.path.dirname(os.path.abspath(__file__))
 
     data_directory = os.path.join(cur_dir, 'data')
-    # print(data_directory)
+
     query_dir = create_query_paths(data_directory)
     filename_mp3 = os.path.join(query_dir, f'src.mp3')
     filename_json = os.path.join(query_dir, f'src.json')
-    filename_beep = os.path.join(cur_dir, 'auxiliary', f'bleeping.mp3')
-    print("filename_beep: ", filename_beep)
+    filename_beep = os.path.join(cur_dir, BLEEPING_SOUNDS_DIR, f'bleeping.mp3')
 
     async with aiofiles.open(filename_json, 'wb') as out_file:
         content = await files['.json'].read()  # async read
@@ -96,14 +104,14 @@ async def predict(response: FileResponse, request: List[UploadFile] = File(..., 
 
     json_file = open(filename_json, "r")
     data = json.loads(json_file.read())
-    # print("DEBUG! DATA:", data)
 
     out_file = cut_file(query_dir, 'src.mp3', data['redundants'], filename_beep)
-    # format_file(query_dir, 'src.mp3')
-    print("DEBUG! OUTPUT FILE: ", out_file)
+
+    logger.debug(f'OUTPUT FILE: {out_file}')
 
     return FileResponse(out_file)
 
 
 if __name__ == "__main__":
+
     uvicorn.run("server:app", host="0.0.0.0", port=os.getenv("PORT", 8002))
