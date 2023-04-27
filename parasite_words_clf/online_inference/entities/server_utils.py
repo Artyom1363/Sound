@@ -1,10 +1,10 @@
 import re
 import torch
+import logging
+import nltk
+import string
 from transformers import BertTokenizer, BertModel
 from src.models import ParasiteWordsClfHead
-from nltk import tokenize
-
-# PATH_TO_PARASITE_WORDS_CLF_HEAD = '../models/short_classif.pt'
 
 
 class WordClassifier:
@@ -22,21 +22,30 @@ class WordClassifier:
             self.clf_heads[bad_word]['model'] = clf_head
             self.clf_heads[bad_word]['id'] = meta_data['parasite_word_id']
 
+        self.logger = logging.getLogger(type(self).__name__)
+        self.logger.setLevel(logging.INFO)
+        logging_handler = logging.StreamHandler()
+        logging_handler.setLevel(logging.INFO)
+        strfmt = '[%(asctime)s] [%(name)s] [%(levelname)s] > %(message)s'
+        datefmt = '%Y-%m-%d %H:%M:%S'
+        formatter = logging.Formatter(fmt=strfmt, datefmt=datefmt)
+        logging_handler.setFormatter(formatter)
+        self.logger.addHandler(logging_handler)
         print(self.clf_heads)
 
-    #         self.bad_word_token_ids = [cur_bad_word_id,]
-
     def classify(self, text):
-        sents = tokenize.sent_tokenize(text)
+        self.logger.info(f"Input text: {text}")
+        sents = nltk.tokenize.sent_tokenize(text)
         parasite_word_indexes = []
         words_count = 0
 
         for sentence in sents:
-            print("sentence: ", sentence)
             sentence = sentence.lower()
-            words_in_sent = re.split('\W+', sentence)
-            if words_in_sent[-1] == '':
-                words_in_sent = words_in_sent[0:-1]
+            self.logger.info(f"Sentence: {sentence}")
+            words_in_sent = nltk.word_tokenize(sentence)
+            words_in_sent = [word for word in words_in_sent if word not in string.punctuation]
+
+            self.logger.info(f"Splitted words: {words_in_sent} ")
 
             tokenized_sent = self.tokenizer(sentence, truncation=True, return_tensors='pt', padding='max_length',
                                             max_length=512)
@@ -74,6 +83,6 @@ class WordClassifier:
                         parasite_word_indexes.append(words_count + idx)
 
             words_count += len(words_in_sent)
-            print("words_count: ", words_count, words_in_sent)
 
+        self.logger.info(f"Parasite words indexes: {parasite_word_indexes}")
         return parasite_word_indexes
