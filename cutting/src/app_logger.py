@@ -35,15 +35,15 @@ def get_logger(name):
         return logger
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--debug', action='store_true', help='Указать файл для логирования')
+    parser.add_argument('--prod', action='store_true', help='Set if running on production')
 
     args = parser.parse_args()
     logger.addHandler(get_stream_handler())
 
-    if args.debug:
-        logger.setLevel('DEBUG')
-    else:
+    if args.prod:
         logger.setLevel('INFO')
         logger.addHandler(get_file_handler())
+    else:
+        logger.setLevel('DEBUG')
 
     return logger

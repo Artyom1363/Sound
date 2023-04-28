@@ -85,7 +85,8 @@ async def predict(response: FileResponse, request: List[UploadFile] = File(..., 
     json_file = open(filename_json, "r")
     data = json.loads(json_file.read())
 
-    out_file = cut_file(query_dir, 'src.mp3', data['redundants'], filename_beep)
+    # src_file = os.path.join(dir_path, file_name)
+    out_file = cut_file(query_dir, filename_mp3, data['redundants'], filename_beep)
 
     logger.debug(f'OUTPUT FILE: {out_file}')
 

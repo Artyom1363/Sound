@@ -18,4 +18,4 @@ RUN pip install -e .
 
 EXPOSE 8002
 
-CMD ["python3", "online_inference/server.py"]
+CMD ["python3", "online_inference/server.py", "--prod"]

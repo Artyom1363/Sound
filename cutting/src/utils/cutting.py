@@ -14,20 +14,21 @@ DEFAULT_CROSS_FADE = 200
 def cut_file(dir_path, file_name, redundants, file_name_beep):
     """
     recieve:
-    path to directory with file
-    path to audio file
+    dir_path - path to directory with file
+    file_name - name of audio file in dir_path
     timestamps of redundants in seconds
+    file_name_beep - path to bleeping file
     """
 
-    src_file = os.path.join(dir_path, file_name)
-    audio = AudioSegment.from_file(src_file, format="mp3")
+    # src_file = os.path.join(dir_path, file_name)
+    audio = AudioSegment.from_file(file_name, format="mp3")
     bleep = AudioSegment.from_file(file_name_beep, format="mp3")
     bleep = bleep[1000:2000]
     redundants = sorted(redundants, key=lambda d: d['start'])
     logger.debug(f"Sorted redundants: {str(redundants)}")
 
     for redundant in reversed(redundants):
-        start_redundant = max(redundant['start'] * 1000 - 100, 0)
+        start_redundant = max(redundant['start'] * 1000 - 50, 0)
         end_redundant = redundant['end'] * 1000 + 50
         redundant_filler = redundant['filler']
 
