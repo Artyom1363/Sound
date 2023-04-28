@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import argparse
 from typing import Tuple, List
 import uvicorn
 from fastapi import FastAPI, File, UploadFile
@@ -8,27 +9,12 @@ from fastapi.responses import FileResponse
 import logging
 import aiofiles
 from src.utils import cut_file, format_file
+from src import app_logger
 
 BLEEPING_SOUNDS_DIR = 'bleeping_sounds'
-LOG_FILENAME = '/var/log/cutting.log'
 
 app = FastAPI()
-
-
-def set_up_logger(logger):
-    strfmt = '%(asctime)s\t%(name)s\t%(levelname)s\t>\t%(message)s'
-    datefmt = '%Y-%m-%d %H:%M:%S'
-    formatter = logging.Formatter(fmt=strfmt, datefmt=datefmt)
-
-    # file_handler = logging.FileHandler(LOG_FILENAME)
-    file_handler = logging.StreamHandler()
-    file_handler.setLevel('DEBUG')
-    file_handler.setFormatter(formatter)
-
-    # print("__name__ in server: ", __name__)
-    logger.setLevel('DEBUG')
-    logger.addHandler(file_handler)
-    # print("logger.handlers: ", logger.handlers)
+logger = app_logger.get_logger(__name__)
 
 
 def create_query_paths(data_directory: str) -> Tuple[str, str]:
@@ -38,15 +24,12 @@ def create_query_paths(data_directory: str) -> Tuple[str, str]:
     2. data_directory/gaps_wav
     :return: query_dir
     """
-    logger = logging.getLogger(__name__)
 
     timestr = time.strftime("%Y-%m-%d-%H-%M-%S")
     logger.debug(f'cur_dir is: {data_directory}')
 
     query_dir = os.path.join(data_directory, timestr)
-    # fragments_path_mp3 = os.path.join(query_dir, "files")
     os.makedirs(query_dir)
-    # os.mkdir(fragments_path_mp3)
     return query_dir
 
 
@@ -57,8 +40,7 @@ def read_root():
 
 @app.on_event("startup")
 def init():
-    logger = logging.getLogger(__name__)
-    set_up_logger(logger)
+    pass
 
 
 @app.get("/health")
@@ -68,7 +50,6 @@ def read_health():
 
 @app.post("/cut/")
 async def predict(response: FileResponse, request: List[UploadFile] = File(..., ext_whitelist=["json", "mp3"])):
-    logger = logging.getLogger(__name__)
     files = {}
     extensions = ['.json', '.mp3']
     for file in request:
@@ -113,5 +94,4 @@ async def predict(response: FileResponse, request: List[UploadFile] = File(..., 
 
 
 if __name__ == "__main__":
-
     uvicorn.run("server:app", host="0.0.0.0", port=os.getenv("PORT", 8002))

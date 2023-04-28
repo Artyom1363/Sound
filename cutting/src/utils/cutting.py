@@ -1,23 +1,10 @@
 from pydub import AudioSegment
 import logging
 import os
+from src import app_logger
 
-# LOG_FILENAME = '/var/log/cutting.log'
 
-# strfmt = '%(asctime)s\t%(name)s\t%(levelname)s\t>\t%(message)s'
-# datefmt = '%Y-%m-%d %H:%M:%S'
-# formatter = logging.Formatter(fmt=strfmt, datefmt=datefmt)
-#
-# # file_handler = logging.FileHandler(LOG_FILENAME)
-# file_handler = logging.StreamHandler()
-# file_handler.setLevel('DEBUG')
-# file_handler.setFormatter(formatter)
-#
-# print("DEBuggin::", __name__)
-# logger = logging.getLogger(__name__)
-#
-# logger.setLevel('DEBUG')
-# logger.addHandler(file_handler)
+logger = app_logger.get_logger(__name__)
 
 
 def cut_file(dir_path, file_name, redundants, file_name_beep):
@@ -30,12 +17,12 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
 
     src_file = os.path.join(dir_path, file_name)
     audio = AudioSegment.from_file(src_file, format="mp3")
-    print("os.getcwd()")
+    # print("os.getcwd()")
     # logger.debug(f'cwd: {os.getcwd()}')
     bleep = AudioSegment.from_file(file_name_beep, format="mp3")
     bleep = bleep[1000:2000]
     redundants = sorted(redundants, key=lambda d: d['start'])
-    print(f"Sorted redundants: {str(redundants)}")
+    logger.debug(f"Sorted redundants: {str(redundants)}")
 
     for redundant in reversed(redundants):
         start_redundant = max(redundant['start'] * 1000 - 100, 0)
@@ -61,7 +48,7 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
 
         else:
             # print("ERROR: unsupported format")
-            print('ERROR: unsupported format')
+            logger.info('ERROR: unsupported format')
 
     out_file = os.path.join(dir_path, "clear.mp3")
     audio.export(out_file, format="mp3")
