@@ -1,14 +1,13 @@
 import os
 import time
 import json
-import argparse
 from typing import Tuple, List
 import uvicorn
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import FileResponse
 import logging
 import aiofiles
-from src.utils import cut_file, format_file
+from src.utils import cut_file
 from src import app_logger
 
 BLEEPING_SOUNDS_DIR = 'bleeping_sounds'
