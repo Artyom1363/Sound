@@ -1,0 +1,45 @@
+# Audio clipping and smoothing service
+## Описание
+Микросервис для вырезания из аудио фрагментов и сглаживания образующихся склеек
+
+На вход ожидает 2 файла:
+1. mp3
+2. json с timestamp
+
+
+Json выглядит следующим образом:
+
+{"redundants":
+  [
+    {
+      "start": *время начала*, 
+      "end": *время конца*, 
+      "filler": {
+        -- либо "empty", либо "bleep"
+        "empty" : {
+          -- либо "cross_fade", либо "fade_in_out"
+          "cross_fade" : тут может быть число/null, пустой словарь
+          "fade_in_out": {
+            "fade_in": число/null,
+            "fade_out": число/null
+           } 
+           -- в случае если не указан какой-то из fade_ будет взято значение по умолчанию
+        }
+        "bleep": {} (пустой словарь или null)
+      }
+    },
+  
+  ]
+}
+
+
+Запуск тестов:
+------------
+    python3 tests/utils/test_cut_file.py
+------------
+
+Запуск в докере:
+------------
+    docker pull polonium13/cutting:version
+    docker run --log-driver=json-file -d -p 8002:8002 -it polonium13/cutting:version
+------------
