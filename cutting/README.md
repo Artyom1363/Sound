@@ -18,7 +18,7 @@ Json выглядит следующим образом:
         -- либо "empty", либо "bleep"
         "empty" : {
           -- либо "cross_fade", либо "fade_in_out"
-          "cross_fade" : тут может быть число/null, пустой словарь
+          "cross_fade" : число/null/{}
           "fade_in_out": {
             "fade_in": число/null,
             "fade_out": число/null
