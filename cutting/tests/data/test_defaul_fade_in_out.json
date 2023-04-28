@@ -1,0 +1,11 @@
+{"redundants":
+  [
+    {"start": 0, "end": 1, 
+      "filler": {
+        "empty" : {
+          "fade_in_out" : null
+        }
+      }
+    }
+  ]
+}

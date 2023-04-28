@@ -1,0 +1,10 @@
+{"redundants":
+  [
+    {"start": 0.5, "end": 3, "filler": {
+      "empty" : {
+        "cross_fade" : 3000
+      }
+    }
+  }
+  ]
+}
