@@ -38,8 +38,6 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
             cnt = total_len // 1000
 
             extended_bleep = bleep * int(cnt + 1)
-            # extended_bleep_file = os.path.join(dir_path, "extended_beep.mp3")
-            # extended_bleep.export(extended_bleep_file, format="mp3")
 
             audio = audio[:start_redundant] + extended_bleep[:total_len] + audio[end_redundant:]
 
@@ -84,7 +82,12 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
                     audio = start_audio + end_audio
 
             elif 'bleep' in redundant_filler:
-                pass
+                total_len = end_redundant - start_redundant
+                cnt = total_len // 1000
+
+                extended_bleep = bleep * int(cnt + 1)
+
+                audio = audio[:start_redundant] + extended_bleep[:total_len] + audio[end_redundant:]
 
         else:
             # print("ERROR: unsupported format")
