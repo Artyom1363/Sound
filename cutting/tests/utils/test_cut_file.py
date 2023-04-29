@@ -4,6 +4,7 @@ import json
 from pydub import AudioSegment
 from src.utils import cut_file
 
+
 TEST_DATA_DIR = 'tests/data'
 PATH_TO_BLEEPING = 'online_inference/bleeping_sounds/bleeping.mp3'
 
@@ -33,20 +34,6 @@ class TestCutFile(unittest.TestCase):
         # 0.5 1 -> 0.45 1.05 -> equal part will be from 1.05 + 450 = 1.5
         self.assertEqual(len(source_audio[1500:]), len(processed_audio[450:]))
 
-        # audio = AudioSegment.silent(duration=5000)
-        # audio.export(filepath, format="mp3")
-        # redundants = {'start': 1, 'end': 2, 'filler': 'empty'}
-        # filenamebeep = "beep.mp3"
-        # beep = AudioSegment.silent(duration=1000)
-        # beep.export(filenamebeep, format="mp3")
-        # result = cutfile(dirpath, filename, redundants, filenamebeep)
-        # assert result == os.path.join(dirpath, "clear.mp3")
-        # assert os.path.exists(result)
-
-        # os.remove(processed_file)
-        # os.remove(test_dirpath)
-
-        # os.remove(result)
 
 if __name__ == '__main__':
     unittest.main()
