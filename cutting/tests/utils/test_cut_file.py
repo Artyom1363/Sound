@@ -2,8 +2,6 @@ import unittest
 import os
 import json
 from pydub import AudioSegment
-# import threading
-# from unittest import mock
 from src.utils import cut_file
 
 TEST_DATA_DIR = 'tests/data'

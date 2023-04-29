@@ -1,15 +1,103 @@
 from pydub import AudioSegment
 import logging
 import os
+import numbers
 from src import app_logger
 from src.exceptions import BadRequest
-
 
 logger = app_logger.get_logger(__name__)
 DEFAULT_FADE_IN = 150
 DEFAULT_FADE_OUT = 150
 DEFAULT_CROSS_FADE = 200
 
+
+def fill_fade_settings(redundant_filler: dict):
+    res_filler = {}
+    logger.debug(f"redundant_filler: {redundant_filler}")
+    # logger.debug(f"redundant_filler['emplty']: {redundant_filler['empty']}")
+    if type(redundant_filler) == dict:
+        if 'empty' in redundant_filler:
+            res_filler['empty'] = {}
+            if not any([
+                (redundant_filler['empty'] is None),
+                isinstance(redundant_filler['empty'], dict),
+            ]):
+                logger.debug(f"Invalid object type in empty: {redundant_filler['empty']} ")
+                raise BadRequest(f"Invalid object type in empty: {redundant_filler['empty']} ")
+
+            if redundant_filler['empty'] is None:
+                res_filler['empty'] = {
+                    'cross_fade': DEFAULT_CROSS_FADE
+                }
+            elif 'cross_fade' in redundant_filler['empty']:
+                cross_fade = redundant_filler['empty']['cross_fade']
+                cross_fade = cross_fade if isinstance(cross_fade, numbers.Number) else DEFAULT_CROSS_FADE
+                res_filler['empty'] = {
+                    'cross_fade': cross_fade,
+                }
+
+            elif 'fade_in_out' in redundant_filler['empty']:
+                fade_in = None
+                fade_out = None
+                fade_in_out_config = redundant_filler['empty']['fade_in_out']
+
+                if not any([
+                    isinstance(fade_in_out_config, dict),
+                    fade_in_out_config is None
+                ]):
+                    raise BadRequest(f"Invalid type of setting fade_in_out in {redundant_filler}")
+
+                if all([
+                    isinstance(fade_in_out_config, dict),
+                    ('fade_in' in fade_in_out_config)
+                ]):
+                    fade_in = fade_in_out_config['fade_in']
+
+                if all([
+                    isinstance(fade_in_out_config, dict),
+                    ('fade_out' in fade_in_out_config)
+                ]):
+                    fade_out = fade_in_out_config['fade_out']
+
+                fade_in = fade_in if isinstance(fade_in, numbers.Number) else DEFAULT_FADE_IN
+                fade_out = fade_out if isinstance(fade_out, numbers.Number) else DEFAULT_FADE_IN
+
+                res_filler['empty'] = {
+                    'fade_in_out': {
+                        'fade_in': fade_in,
+                        'fade_out': fade_out,
+                    }
+                }
+            else:
+                raise Exception("Error occured while processing filler settings")
+
+        elif 'bleep' in redundant_filler:
+            res_filler['bleep'] = {}
+
+    elif redundant_filler == 'empty':
+        res_filler['empty'] = {
+            'fade_in_out': {
+                'fade_in': DEFAULT_FADE_IN,
+                'fade_out': DEFAULT_FADE_OUT
+            }
+        }
+    elif redundant_filler == 'bleep':
+        res_filler['bleep'] = {}
+
+    else:
+        raise BadRequest("Unrecognised type of filler")
+
+    return res_filler
+
+
+# def reformat_redundants(redundants):
+#     redundants = sorted(redundants, key=lambda d: d['start'])
+#     filtered_redundants = []
+#     for redundant in redundants:
+#         redundant = fill_fade_settings(redundant['filler'])
+#         if len(filtered_redundants) == 0:
+#             filtered_redundants.append(redundant)
+#             continue
 
 def cut_file(dir_path, file_name, redundants, file_name_beep):
     """
@@ -24,7 +112,6 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
     audio = AudioSegment.from_file(file_name, format="mp3")
     bleep = AudioSegment.from_file(file_name_beep, format="mp3")
     bleep = bleep[1000:2000]
-    redundants = sorted(redundants, key=lambda d: d['start'])
     logger.debug(f"Sorted redundants: {str(redundants)}")
 
     for redundant in reversed(redundants):
@@ -32,8 +119,30 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
         end_redundant = redundant['end'] * 1000 + 50
         redundant_filler = redundant['filler']
 
-        if redundant_filler == 'bleep':
+        logger.debug(f"redundant_filler before processing: {redundant_filler}")
+        redundant_filler = fill_fade_settings(redundant_filler)
+        logger.debug(f"redundant_filler after processing: {redundant_filler}")
 
+        if 'empty' in redundant_filler:
+            if 'cross_fade' in redundant_filler['empty']:
+                cross_fade = redundant_filler['empty']['cross_fade']
+
+                rest_in_end = len(audio) - end_redundant
+                cross_fade = min(cross_fade, start_redundant, rest_in_end)
+                logger.debug(f"Resulted cross_fade: {cross_fade}")
+
+                start_audio = audio[:start_redundant]
+                end_audio = audio[end_redundant:]
+                audio = start_audio.append(end_audio, crossfade=cross_fade)
+
+            elif 'fade_in_out' in redundant_filler['empty']:
+                start_audio = audio[:start_redundant].fade_out(fade_out)
+                end_audio = audio[end_redundant:].fade_in(fade_in)
+                audio = start_audio + end_audio
+            else:
+                raise BadRequest(f"Unrecorgnied redundant filler {redundant_filler}")
+
+        elif 'bleep' in redundant_filler:
             total_len = end_redundant - start_redundant
             cnt = total_len // 1000
 
@@ -41,57 +150,11 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
 
             audio = audio[:start_redundant] + extended_bleep[:total_len] + audio[end_redundant:]
 
-        elif redundant_filler == 'empty':
-
-            start_audio = audio[:start_redundant].fade_out(150)
-            end_audio = audio[end_redundant:].fade_in(150)
-            audio = start_audio + end_audio
-
-        elif type(redundant_filler) == dict:
-            if 'empty' in redundant_filler:
-                if type(redundant_filler['empty']) != dict:
-                    logger.debug("Got file without type of formatting")
-                elif 'cross_fade' in redundant_filler['empty']:
-                    cross_fade = redundant_filler['empty']['cross_fade']
-                    cross_fade = DEFAULT_CROSS_FADE if cross_fade is None else cross_fade
-
-                    rest_in_end = len(audio) - end_redundant
-                    cross_fade = min(cross_fade, start_redundant, rest_in_end)
-                    logger.debug(f"Resulted cross_fade: {cross_fade}")
-
-                    start_audio = audio[:start_redundant]
-                    end_audio = audio[end_redundant:]
-                    audio = start_audio.append(end_audio, crossfade=cross_fade)
-
-                elif 'fade_in_out' in redundant_filler['empty']:
-                    fade_in = None
-                    fade_out = None
-                    fade_in_out_config = redundant_filler['empty']['fade_in_out']
-
-                    if (fade_in_out_config is not None) and ('fade_in' in fade_in_out_config):
-                        fade_in = fade_in_out_config['fade_in']
-
-                    if (fade_in_out_config is not None) and ('fade_out' in fade_in_out_config):
-                        fade_out = fade_in_out_config['fade_out']
-
-                    fade_in = DEFAULT_FADE_IN if fade_in is None else fade_in
-                    fade_out = DEFAULT_FADE_OUT if fade_out is None else fade_out
-                    logger.debug(f"Resulted fade_in: {fade_in} fade_out: {fade_out}")
-                    start_audio = audio[:start_redundant].fade_out(fade_out)
-                    end_audio = audio[end_redundant:].fade_in(fade_in)
-                    audio = start_audio + end_audio
-
-            elif 'bleep' in redundant_filler:
-                total_len = end_redundant - start_redundant
-                cnt = total_len // 1000
-
-                extended_bleep = bleep * int(cnt + 1)
-
-                audio = audio[:start_redundant] + extended_bleep[:total_len] + audio[end_redundant:]
-
         else:
-            # print("ERROR: unsupported format")
-            logger.error('ERROR: unsupported format')
+            raise BadRequest(f"Unrecorgnied redundant filler {redundant_filler}")
+        # else:
+        # print("ERROR: unsupported format")
+        # logger.error('ERROR: unsupported format')
 
     out_file = os.path.join(dir_path, "clear.mp3")
     audio.export(out_file, format="mp3")
