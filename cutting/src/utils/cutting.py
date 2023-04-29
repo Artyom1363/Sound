@@ -13,23 +13,19 @@ DEFAULT_CROSS_FADE = 200
 
 def fill_fade_settings(redundant_filler: dict):
     res_filler = {}
-    logger.debug(f"redundant_filler: {redundant_filler}")
+    logger.debug(f"redundant_filler in fill_fade_settings: {redundant_filler}")
     # logger.debug(f"redundant_filler['emplty']: {redundant_filler['empty']}")
     if type(redundant_filler) == dict:
         if 'empty' in redundant_filler:
             res_filler['empty'] = {}
-            if not any([
-                (redundant_filler['empty'] is None),
-                isinstance(redundant_filler['empty'], dict),
-            ]):
+            if redundant_filler['empty'] is None:
+                redundant_filler['empty'] = {}
+
+            if not isinstance(redundant_filler['empty'], dict):
                 logger.debug(f"Invalid object type in empty: {redundant_filler['empty']} ")
                 raise BadRequest(f"Invalid object type in empty: {redundant_filler['empty']} ")
 
-            if redundant_filler['empty'] is None:
-                res_filler['empty'] = {
-                    'cross_fade': DEFAULT_CROSS_FADE
-                }
-            elif 'cross_fade' in redundant_filler['empty']:
+            if 'cross_fade' in redundant_filler['empty']:
                 cross_fade = redundant_filler['empty']['cross_fade']
                 cross_fade = cross_fade if isinstance(cross_fade, numbers.Number) else DEFAULT_CROSS_FADE
                 res_filler['empty'] = {
@@ -41,22 +37,17 @@ def fill_fade_settings(redundant_filler: dict):
                 fade_out = None
                 fade_in_out_config = redundant_filler['empty']['fade_in_out']
 
-                if not any([
-                    isinstance(fade_in_out_config, dict),
-                    fade_in_out_config is None
-                ]):
+                if fade_in_out_config is None:
+                    fade_in_out_config = {}
+                # logger.debug(f"type(fade_in_out_config):{type(fade_in_out_config)}")
+
+                if not isinstance(fade_in_out_config, dict):
                     raise BadRequest(f"Invalid type of setting fade_in_out in {redundant_filler}")
 
-                if all([
-                    isinstance(fade_in_out_config, dict),
-                    ('fade_in' in fade_in_out_config)
-                ]):
+                if 'fade_in' in fade_in_out_config:
                     fade_in = fade_in_out_config['fade_in']
 
-                if all([
-                    isinstance(fade_in_out_config, dict),
-                    ('fade_out' in fade_in_out_config)
-                ]):
+                if 'fade_out' in fade_in_out_config:
                     fade_out = fade_in_out_config['fade_out']
 
                 fade_in = fade_in if isinstance(fade_in, numbers.Number) else DEFAULT_FADE_IN
@@ -69,7 +60,9 @@ def fill_fade_settings(redundant_filler: dict):
                     }
                 }
             else:
-                raise Exception("Error occured while processing filler settings")
+                res_filler['empty'] = {
+                    'cross_fade': DEFAULT_CROSS_FADE
+                }
 
         elif 'bleep' in redundant_filler:
             res_filler['bleep'] = {}
@@ -90,14 +83,57 @@ def fill_fade_settings(redundant_filler: dict):
     return res_filler
 
 
-# def reformat_redundants(redundants):
-#     redundants = sorted(redundants, key=lambda d: d['start'])
-#     filtered_redundants = []
-#     for redundant in redundants:
-#         redundant = fill_fade_settings(redundant['filler'])
-#         if len(filtered_redundants) == 0:
-#             filtered_redundants.append(redundant)
-#             continue
+def get_filler_type(redundant_filler: dict):
+    res = ''
+    if 'empty' in redundant_filler:
+        res = 'empty'
+    elif 'bleep' in redundant_filler:
+        res = 'bleep'
+    return res
+
+
+def handle_redundants(redundants:dict):
+    """
+    :param redundants:
+    redundants dict like:
+    {
+        'start': num,
+        'end': num,
+        'filler':
+    }
+    :return: redundants with filled params and corrected boundaries
+    """
+    redundants = sorted(redundants, key=lambda d: d['start'])
+    filtered_redundants = []
+    for redundant in redundants:
+        redundant = fill_fade_settings(redundant)
+        if len(filtered_redundants) == 0:
+            filtered_redundants.append(redundant)
+            continue
+
+        if filtered_redundants[-1]['end'] > redundant['start']:
+            if all([
+                filtered_redundants[-1]['end'] >= redundant['end'],
+                get_filler_type(filtered_redundants[-1]['filler']) == get_filler_type(redundant['filler'])
+            ]):
+                redundant['start'] = filtered_redundants[-1]['end']
+                zero_fade_settings = {
+                    'fade_in_out': {
+                        'fade_in': 0,
+                        'fade_out': 0,
+                    }
+                }
+                if get_filler_type(filtered_redundants[-1]['filler']) == 'empty':
+                    filtered_redundants[-1]['filler']['empty'] = zero_fade_settings
+                else:
+                    redundant['filler']['empty'] = zero_fade_settings
+
+            else:
+                filtered_redundants[-1]['end'] = max(redundant['end'], filtered_redundants[-1]['end'])
+
+        filtered_redundants.append(redundant)
+        return filtered_redundants
+
 
 def cut_file(dir_path, file_name, redundants, file_name_beep):
     """
@@ -113,6 +149,7 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
     bleep = AudioSegment.from_file(file_name_beep, format="mp3")
     bleep = bleep[1000:2000]
     logger.debug(f"Sorted redundants: {str(redundants)}")
+    handle_redundants(redundants)
 
     for redundant in reversed(redundants):
         start_redundant = max(redundant['start'] * 1000 - 50, 0)
@@ -123,7 +160,9 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
         redundant_filler = fill_fade_settings(redundant_filler)
         logger.debug(f"redundant_filler after processing: {redundant_filler}")
 
-        if 'empty' in redundant_filler:
+        filler_type = get_filler_type(redundant_filler)
+
+        if filler_type == 'empty':
             if 'cross_fade' in redundant_filler['empty']:
                 cross_fade = redundant_filler['empty']['cross_fade']
 
@@ -142,7 +181,7 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
             else:
                 raise BadRequest(f"Unrecorgnied redundant filler {redundant_filler}")
 
-        elif 'bleep' in redundant_filler:
+        elif filler_type == 'bleep':
             total_len = end_redundant - start_redundant
             cnt = total_len // 1000
 
