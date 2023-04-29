@@ -8,3 +8,4 @@ stable-ts
 uvicorn[standard]
 python-multipart
 sympy 
+pip install git+https://github.com/m-bain/whisperx.git

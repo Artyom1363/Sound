@@ -7,13 +7,14 @@ import os
 from app.model import init_storage_path, add_timestamp, worker_ant
 app = FastAPI()
 
-
+WORKER_NUM = 1
 mp_ctx = mp.get_context('spawn')
 
 audio_file_tasks_quque = mp_ctx.Queue()
 errors_from_process = mp_ctx.Queue()
-p = mp_ctx.Process(target=worker_ant, args=(audio_file_tasks_quque,errors_from_process,))
-p.start()
+p = [mp_ctx.Process(target=worker_ant, args=(audio_file_tasks_quque,errors_from_process,)) for _ in range(WORKER_NUM)]
+for worker in p:
+    worker.start()
 model_ready = False
 storage_path = ""
 id_to_filename = {}
@@ -47,9 +48,9 @@ async def transcribe(file: UploadFile, response: Response):
         response.status_code = 503
         return "model not ready!"
 
-    if file.filename[file.filename.rfind("."):] != ".mp3":
-        response.status_code = 503
-        return "wrong file format, expected .mp3"
+    # if file.filename[file.filename.rfind("."):] != ".mp3":
+    #     response.status_code = 503
+    #     return "wrong file format, expected .mp3"
 
     audio_path = storage_path+'/'+add_timestamp(file.filename)
     with open(audio_path, "wb") as f:
