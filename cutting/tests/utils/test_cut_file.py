@@ -53,6 +53,17 @@ test_cutting_bad_cases = [
     ],
 ]
 
+test_interview2 = [
+    {'start': 0.7224080267558528, 'end': 1.5050167224080269, 'filler': 'empty'},
+    {'start': 4.093645484949833, 'end': 4.494983277591974, 'filler': 'empty'},
+    {'start': 11.773869346733669, 'end': 12.055276381909547, 'filler': 'empty'},
+    {'start': 20.08028368794326, 'end': 20.160567375886526, 'filler': 'empty'},
+    {'start': 20.381347517730497, 'end': 21.204255319148935, 'filler': 'empty'},
+    {'start': 23.7331914893617, 'end': 24.275106382978723, 'filler': 'empty'},
+    {'start': 13.32859296482412, 'end': 13.62421796482412, 'filler': 'empty'},
+    {'start': 16.53773154362416, 'end': 16.86441904362416, 'filler': 'empty'}
+]
+
 
 class TestCutFile(unittest.TestCase):
 
@@ -78,6 +89,11 @@ class TestCutFile(unittest.TestCase):
         # 0.5 1 -> 0.45 1.05 -> equal part will be from 1.05 + 450 = 1.5
         self.assertEqual(len(source_audio[1500:]), len(processed_audio[450:]))
 
+    def test_interview2(self):
+        os.makedirs(self.test_dirpath, exist_ok=True)
+
+        processed_file = cut_file(self.test_dirpath, self.source_audio_filepath, test_interview2, PATH_TO_BLEEPING)
+        # print(processed_file)
 
     def test_bad_json(self):
         for test_case in test_cutting_bad_cases:

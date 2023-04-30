@@ -188,8 +188,8 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
     audio = AudioSegment.from_file(file_name, format="mp3")
     bleep = AudioSegment.from_file(file_name_beep, format="mp3")
     bleep = bleep[1000:2000]
-    logger.debug(f"Source redundants: {redundants}")
-    preprocess_redundants(redundants)
+    logger.info(f"Source redundants: {redundants}")
+    redundants = preprocess_redundants(redundants)
     logger.debug(f"Handled redundants: {redundants}")
 
     for redundant in reversed(redundants):
