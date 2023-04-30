@@ -9,7 +9,7 @@ logger = app_logger.get_logger(__name__)
 DEFAULT_FADE_IN = 150
 DEFAULT_FADE_OUT = 150
 DEFAULT_CROSS_FADE = 200
-DEFAULT_ADDITION = 50
+DEFAULT_ADDITION = 0
 DEFAULT_EMPTY = {
     'cross_fade': DEFAULT_CROSS_FADE,
 }
