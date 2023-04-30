@@ -45,7 +45,7 @@ Json выглядит следующим образом:
 Запуск тестов:
 ------------
     python3 tests/utils/test_cut_file.py
-    python3 tests/utils/test_fill_fade_settings.py
+    python3 tests/utils/test_validating_json.py
 ------------
 
 Запуск в докере:

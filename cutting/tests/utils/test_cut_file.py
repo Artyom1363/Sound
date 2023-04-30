@@ -21,49 +21,48 @@ test_cross_at_start = [
     }
 ]
 
-test_cutting_bad_cases = [
+test_fade_in_out_cases = [
     [
-        [
-            {
-                'start': -1.0,
-                'end': 100.0,
-                'filler': {
-                    'empty': None
+        {
+            "start": 0.5,
+            "end": 1,
+            "filler": {
+                "empty": {
+                    "fade_in_out": {
+                        'fade_in': 200,
+                        'fade_out': 200,
+                    }
                 }
-            },
-        ],
-        'Boundaries must be: 0 <= left <= right'
+            }
+        }
     ],
     [
-        [
-            {
-                'start': 1.0,
-                'end': 0.5,
-                'filler': {}
-            },
-        ],
-        'Boundaries must be: 0 <= left <= right'
+        {
+            "start": 0.5,
+            "end": 1,
+            "filler": {
+                "empty": {
+                    "fade_in_out": {
+                        'fade_in': 1000,
+                        'fade_out': 100,
+                    }
+                }
+            }
+        }
     ],
-    [
-        [
-            {
-                'start': 1.0,
-                'end': 1.0,
-            },
-        ],
-        "There is no filler in {'start': 1.0, 'end': 1.0}"
-    ],
-    [
-        [
-            {
-                'start': 'str',
-                'end': 1.0,
-                'filler': None
-            },
-        ],
-        'Boundaries must be numeric'
-    ],
+
 ]
+
+test_bleep = [
+    {
+        "start": 0.5,
+        "end": 3,
+        "filler": {
+            'bleep': None
+        }
+    }
+]
+
 
 test_interview2 = [
     {'start': 0.7224080267558528, 'end': 1.5050167224080269, 'filler': 'empty'},
@@ -98,13 +97,39 @@ class TestCutFile(unittest.TestCase):
         os.makedirs(self.test_dirpath, exist_ok=True)
 
         processed_file = cut_file(self.test_dirpath, self.source_audio_filepath, test_interview2, PATH_TO_BLEEPING)
-        # print(processed_file)
 
-    def test_bad_json(self):
-        for test_case in test_cutting_bad_cases:
-            with self.assertRaises(BadRequest) as context:
-                cut_file(self.test_dirpath, self.source_audio_filepath, test_case[0], PATH_TO_BLEEPING)
-            self.assertEqual(test_case[1], str(context.exception))
+    def test_fade_in_out(self):
+        os.makedirs(self.test_dirpath, exist_ok=True)
+
+        processed_file = cut_file(self.test_dirpath, self.source_audio_filepath, test_fade_in_out_cases[0], PATH_TO_BLEEPING)
+
+        source_audio = AudioSegment.from_file(self.source_audio_filepath, format="mp3")
+        processed_audio = AudioSegment.from_file(processed_file, format="mp3")
+
+        # self.assertEqual(source_audio[0:300].get_array_of_samples(), processed_audio[0:300].get_array_of_samples())
+        self.assertEqual(len(source_audio[1200:]), len(processed_audio[700:]))
+
+        processed_file = cut_file(self.test_dirpath, self.source_audio_filepath, test_fade_in_out_cases[1], PATH_TO_BLEEPING)
+
+        source_audio = AudioSegment.from_file(self.source_audio_filepath, format="mp3")
+        processed_audio = AudioSegment.from_file(processed_file, format="mp3")
+
+        # self.assertEqual(len(source_audio[0:300]), len(processed_audio[0:300]))
+        self.assertEqual(len(source_audio[1100:]), len(processed_audio[600:]))
+
+
+    def test_bleep(self):
+        os.makedirs(self.test_dirpath, exist_ok=True)
+
+        processed_file = cut_file(self.test_dirpath, self.source_audio_filepath, test_bleep, PATH_TO_BLEEPING)
+
+        source_audio = AudioSegment.from_file(self.source_audio_filepath, format="mp3")
+        processed_audio = AudioSegment.from_file(processed_file, format="mp3")
+        bleep = AudioSegment.from_file(PATH_TO_BLEEPING, format="mp3")
+        bleep = bleep[1000:2000] * 5
+        # 0.5 1 -> 0.45 1.05 -> equal part will be from 1.05 + 450 = 1.5
+        self.assertEqual(len(source_audio), len(processed_audio))
+
 
 
 if __name__ == '__main__':

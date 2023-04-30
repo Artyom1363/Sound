@@ -14,55 +14,79 @@ DEFAULT_EMPTY = {
     'cross_fade': DEFAULT_CROSS_FADE,
 }
 
+def fill_empty_setting(empty_filler):
+    # logger.debug(f"{empty_filler=}")
+    res_setting = {}
+    if empty_filler is None:
+        empty_filler = {}
+
+    if not isinstance(empty_filler, dict):
+        logger.info(f"Invalid object type in empty: {empty_filler}")
+        raise BadRequest(f"Invalid object type in empty: {empty_filler}")
+
+    if 'cross_fade' in empty_filler:
+        cross_fade = empty_filler['cross_fade']
+        if not any([
+            cross_fade is None,
+            isinstance(cross_fade, numbers.Number) and cross_fade >= 0
+        ]):
+            raise BadRequest(f"Invalid value in cross_fade: {cross_fade}")
+
+        cross_fade = cross_fade if isinstance(cross_fade, numbers.Number) else DEFAULT_CROSS_FADE
+        res_setting = {
+            'cross_fade': cross_fade,
+        }
+
+    elif 'fade_in_out' in empty_filler:
+        fade_in = None
+        fade_out = None
+        fade_in_out_config = empty_filler['fade_in_out']
+
+        if fade_in_out_config is None:
+            fade_in_out_config = {}
+
+        if not isinstance(fade_in_out_config, dict):
+            raise BadRequest(f"Invalid type of setting fade_in_out in {redundant_filler}")
+
+        if 'fade_in' in fade_in_out_config:
+            fade_in = fade_in_out_config['fade_in']
+            # logger.debug(f"{fade_in=}")
+            if not any([
+                fade_in is None,
+                isinstance(fade_in, numbers.Number) and fade_in >= 0
+            ]):
+                raise BadRequest(f"Invalid fade_in in {fade_in_out_config}")
+
+        if 'fade_out' in fade_in_out_config:
+            fade_out = fade_in_out_config['fade_out']
+
+            if not any([
+                fade_out is None,
+                isinstance(fade_out, numbers.Number) and fade_out >= 0
+            ]):
+                raise BadRequest(f"Invalid fade_out in {fade_in_out_config}")
+
+
+        fade_in = fade_in if isinstance(fade_in, numbers.Number) else DEFAULT_FADE_IN
+        fade_out = fade_out if isinstance(fade_out, numbers.Number) else DEFAULT_FADE_IN
+
+        res_setting = {
+            'fade_in_out': {
+                'fade_in': fade_in,
+                'fade_out': fade_out,
+            }
+        }
+    else:
+        res_setting = DEFAULT_EMPTY
+
+    return res_setting
+
 
 def fill_fade_settings(redundant_filler: dict):
     res_filler = {}
-    # logger.debug(f"redundant_filler in fill_fade_settings: {redundant_filler}")
     if type(redundant_filler) == dict:
         if 'empty' in redundant_filler:
-            res_filler['empty'] = {}
-            if redundant_filler['empty'] is None:
-                redundant_filler['empty'] = {}
-
-            if not isinstance(redundant_filler['empty'], dict):
-                logger.debug(f"Invalid object type in empty: {redundant_filler['empty']}")
-                raise BadRequest(f"Invalid object type in empty: {redundant_filler['empty']}")
-
-            if 'cross_fade' in redundant_filler['empty']:
-                cross_fade = redundant_filler['empty']['cross_fade']
-                cross_fade = cross_fade if isinstance(cross_fade, numbers.Number) else DEFAULT_CROSS_FADE
-                res_filler['empty'] = {
-                    'cross_fade': cross_fade,
-                }
-
-            elif 'fade_in_out' in redundant_filler['empty']:
-                fade_in = None
-                fade_out = None
-                fade_in_out_config = redundant_filler['empty']['fade_in_out']
-
-                if fade_in_out_config is None:
-                    fade_in_out_config = {}
-
-                if not isinstance(fade_in_out_config, dict):
-                    raise BadRequest(f"Invalid type of setting fade_in_out in {redundant_filler}")
-
-                if 'fade_in' in fade_in_out_config:
-                    fade_in = fade_in_out_config['fade_in']
-
-                if 'fade_out' in fade_in_out_config:
-                    fade_out = fade_in_out_config['fade_out']
-
-                fade_in = fade_in if isinstance(fade_in, numbers.Number) else DEFAULT_FADE_IN
-                fade_out = fade_out if isinstance(fade_out, numbers.Number) else DEFAULT_FADE_IN
-
-                res_filler['empty'] = {
-                    'fade_in_out': {
-                        'fade_in': fade_in,
-                        'fade_out': fade_out,
-                    }
-                }
-            else:
-                res_filler['empty'] = DEFAULT_EMPTY
+            res_filler['empty'] = fill_empty_setting(redundant_filler['empty'])
 
         elif 'bleep' in redundant_filler:
             res_filler['bleep'] = {}
@@ -108,7 +132,7 @@ def correct_overlapped_boundaries(redundants:list):
             filtered_redundants.append(redundant)
             continue
 
-        logger.debug(filtered_redundants[-1])
+        # logger.debug(filtered_redundants[-1])
         if filtered_redundants[-1]['end'] > redundant['start']:
             if all([
                 filtered_redundants[-1]['end'] < redundant['end'],
@@ -218,6 +242,9 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
                 audio = start_audio.append(end_audio, crossfade=cross_fade)
 
             elif 'fade_in_out' in redundant_filler['empty']:
+                fade_out = redundant_filler['empty']['fade_in_out']['fade_out']
+                fade_in = redundant_filler['empty']['fade_in_out']['fade_in']
+
                 start_audio = audio[:start_redundant].fade_out(fade_out)
                 end_audio = audio[end_redundant:].fade_in(fade_in)
                 audio = start_audio + end_audio
