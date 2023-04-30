@@ -1,5 +1,6 @@
 import unittest
 from src.utils.cutting import fill_fade_settings
+from src.utils.cutting import handle_redundants
 
 
 DEFAULT_FADE_IN = 150
@@ -123,7 +124,7 @@ test_empty_in_out_good_cases = [
         {
             'empty': {
                 'fade_in_out': {
-                    'fade_in': 1000,
+                    'fade_in': 10.5,
                     'fade_out': 1000
                 }
             }
@@ -131,7 +132,7 @@ test_empty_in_out_good_cases = [
         {
             'empty': {
                 'fade_in_out': {
-                    'fade_in': 1000,
+                    'fade_in': 10.5,
                     'fade_out': 1000
                 }
             }
@@ -176,6 +177,157 @@ test_bleep_good_cases = [
     ],
 ]
 
+test_overlapped_cases = [
+    [
+        [
+            {
+                'start': 1,
+                'end': 2,
+                'filler': {
+                    'empty': {
+                        'cross_fade': 2000
+                    }
+                }
+            },
+            {
+                'start': 1.5,
+                'end': 3,
+                'filler': {
+                    'empty': {
+                        'fade_in_out': None
+                    }
+                }
+            }
+        ],
+        [
+            {
+                'start': 1,
+                'end': 3,
+                'filler': {
+                    'empty': {
+                        'cross_fade': 2000
+                    }
+                }
+            },
+        ],
+    ],
+    [
+        [
+            {
+                'start': 1,
+                'end': 2,
+                'filler': {
+                    'empty': {
+                        'cross_fade': 2000
+                    }
+                }
+            },
+            {
+                'start': 1.5,
+                'end': 3,
+                'filler': {
+                    'bleep': None
+                }
+            }
+        ],
+        [
+            {
+                'start': 1,
+                'end': 2,
+                'filler': {
+                    'empty': {
+                        'fade_in_out': {
+                            'fade_in': 0,
+                            'fade_out': 0
+                        }
+                    }
+                }
+            },
+            {
+                'start': 2,
+                'end': 3,
+                'filler': {
+                    'bleep': {}
+                }
+            },
+        ],
+    ],
+    [
+        [
+            {
+                'start': 1,
+                'end': 2,
+                'filler': {
+                    'bleep': None
+                }
+            },
+            {
+                'start': 1.5,
+                'end': 3,
+                'filler': {
+                    'empty': {
+                        'cross_fade': 2000
+                    }
+                }
+            }
+        ],
+        [
+            {
+                'start': 1,
+                'end': 2,
+                'filler': {
+                    'bleep': {}
+                }
+            },
+            {
+                'start': 2,
+                'end': 3,
+                'filler': {
+                    'empty': {
+                        'fade_in_out': {
+                            'fade_in': 0,
+                            'fade_out': 0
+                        }
+                    }
+                }
+            },
+        ],
+    ],
+    [
+        [
+            {
+                'start': 1,
+                'end': 3.5,
+                'filler': {
+                    'empty': {
+                        'cross_fade': 2000
+                    }
+                }
+            },
+            {
+                'start': 1.5,
+                'end': 3,
+                'filler': {
+                    'empty': {
+                        'fade_in_out': None
+                    }
+                }
+            }
+        ],
+        [
+            {
+                'start': 1,
+                'end': 3.5,
+                'filler': {
+                    'empty': {
+                        'cross_fade': 2000
+                    }
+                }
+            },
+        ],
+    ],
+]
+
 
 class TestFillFadeSettings(unittest.TestCase):
 
@@ -190,6 +342,13 @@ class TestFillFadeSettings(unittest.TestCase):
     def test_bleep_good_cases(self):
         for case in test_bleep_good_cases:
             self.assertEqual(fill_fade_settings(case[0]), case[1])
+
+
+class TestOverlappedSettings(unittest.TestCase):
+
+    def test_overlapped_cases(self):
+        for case in test_overlapped_cases:
+            self.assertEqual(handle_redundants(case[0]), case[1])
 
 
 if __name__ == '__main__':

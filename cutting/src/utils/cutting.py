@@ -106,15 +106,19 @@ def handle_redundants(redundants:dict):
     redundants = sorted(redundants, key=lambda d: d['start'])
     filtered_redundants = []
     for redundant in redundants:
-        redundant = fill_fade_settings(redundant)
+        logger.debug(f"redundant before: {redundant}")
+        redundant['filler'] = fill_fade_settings(redundant['filler'])
+        # logger.debug(f"redundant after: {redundant}")
         if len(filtered_redundants) == 0:
             filtered_redundants.append(redundant)
             continue
 
+        logger.debug(filtered_redundants[-1])
         if filtered_redundants[-1]['end'] > redundant['start']:
+            # logger.debug("came to first if")
             if all([
-                filtered_redundants[-1]['end'] >= redundant['end'],
-                get_filler_type(filtered_redundants[-1]['filler']) == get_filler_type(redundant['filler'])
+                filtered_redundants[-1]['end'] < redundant['end'],
+                get_filler_type(filtered_redundants[-1]['filler']) != get_filler_type(redundant['filler'])
             ]):
                 redundant['start'] = filtered_redundants[-1]['end']
                 zero_fade_settings = {
@@ -127,12 +131,16 @@ def handle_redundants(redundants:dict):
                     filtered_redundants[-1]['filler']['empty'] = zero_fade_settings
                 else:
                     redundant['filler']['empty'] = zero_fade_settings
-
+                # logger.debug("came to second if")
             else:
                 filtered_redundants[-1]['end'] = max(redundant['end'], filtered_redundants[-1]['end'])
+                # logger.debug(f"continue")
+                continue
 
         filtered_redundants.append(redundant)
-        return filtered_redundants
+
+    logger.debug(f"filtered_redundants: {filtered_redundants}")
+    return filtered_redundants
 
 
 def cut_file(dir_path, file_name, redundants, file_name_beep):
@@ -191,9 +199,6 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
 
         else:
             raise BadRequest(f"Unrecorgnied redundant filler {redundant_filler}")
-        # else:
-        # print("ERROR: unsupported format")
-        # logger.error('ERROR: unsupported format')
 
     out_file = os.path.join(dir_path, "clear.mp3")
     audio.export(out_file, format="mp3")
