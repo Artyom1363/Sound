@@ -9,12 +9,15 @@ logger = app_logger.get_logger(__name__)
 DEFAULT_FADE_IN = 150
 DEFAULT_FADE_OUT = 150
 DEFAULT_CROSS_FADE = 200
+DEFAULT_ADDITION = 50
+DEFAULT_EMPTY = {
+    'cross_fade': DEFAULT_CROSS_FADE,
+}
 
 
 def fill_fade_settings(redundant_filler: dict):
     res_filler = {}
-    logger.debug(f"redundant_filler in fill_fade_settings: {redundant_filler}")
-    # logger.debug(f"redundant_filler['emplty']: {redundant_filler['empty']}")
+    # logger.debug(f"redundant_filler in fill_fade_settings: {redundant_filler}")
     if type(redundant_filler) == dict:
         if 'empty' in redundant_filler:
             res_filler['empty'] = {}
@@ -22,8 +25,8 @@ def fill_fade_settings(redundant_filler: dict):
                 redundant_filler['empty'] = {}
 
             if not isinstance(redundant_filler['empty'], dict):
-                logger.debug(f"Invalid object type in empty: {redundant_filler['empty']} ")
-                raise BadRequest(f"Invalid object type in empty: {redundant_filler['empty']} ")
+                logger.debug(f"Invalid object type in empty: {redundant_filler['empty']}")
+                raise BadRequest(f"Invalid object type in empty: {redundant_filler['empty']}")
 
             if 'cross_fade' in redundant_filler['empty']:
                 cross_fade = redundant_filler['empty']['cross_fade']
@@ -39,7 +42,6 @@ def fill_fade_settings(redundant_filler: dict):
 
                 if fade_in_out_config is None:
                     fade_in_out_config = {}
-                # logger.debug(f"type(fade_in_out_config):{type(fade_in_out_config)}")
 
                 if not isinstance(fade_in_out_config, dict):
                     raise BadRequest(f"Invalid type of setting fade_in_out in {redundant_filler}")
@@ -60,20 +62,13 @@ def fill_fade_settings(redundant_filler: dict):
                     }
                 }
             else:
-                res_filler['empty'] = {
-                    'cross_fade': DEFAULT_CROSS_FADE
-                }
+                res_filler['empty'] = DEFAULT_EMPTY
 
         elif 'bleep' in redundant_filler:
             res_filler['bleep'] = {}
 
     elif redundant_filler == 'empty':
-        res_filler['empty'] = {
-            'fade_in_out': {
-                'fade_in': DEFAULT_FADE_IN,
-                'fade_out': DEFAULT_FADE_OUT
-            }
-        }
+        res_filler['empty'] = DEFAULT_EMPTY
     elif redundant_filler == 'bleep':
         res_filler['bleep'] = {}
 
@@ -92,7 +87,7 @@ def get_filler_type(redundant_filler: dict):
     return res
 
 
-def handle_redundants(redundants:dict):
+def correct_overlapped_boundaries(redundants:list):
     """
     :param redundants:
     redundants dict like:
@@ -103,19 +98,19 @@ def handle_redundants(redundants:dict):
     }
     :return: redundants with filled params and corrected boundaries
     """
+    # import pdb
+    # pdb.set_trace()
     redundants = sorted(redundants, key=lambda d: d['start'])
     filtered_redundants = []
     for redundant in redundants:
         logger.debug(f"redundant before: {redundant}")
-        redundant['filler'] = fill_fade_settings(redundant['filler'])
-        # logger.debug(f"redundant after: {redundant}")
+
         if len(filtered_redundants) == 0:
             filtered_redundants.append(redundant)
             continue
 
         logger.debug(filtered_redundants[-1])
         if filtered_redundants[-1]['end'] > redundant['start']:
-            # logger.debug("came to first if")
             if all([
                 filtered_redundants[-1]['end'] < redundant['end'],
                 get_filler_type(filtered_redundants[-1]['filler']) != get_filler_type(redundant['filler'])
@@ -131,16 +126,54 @@ def handle_redundants(redundants:dict):
                     filtered_redundants[-1]['filler']['empty'] = zero_fade_settings
                 else:
                     redundant['filler']['empty'] = zero_fade_settings
-                # logger.debug("came to second if")
             else:
                 filtered_redundants[-1]['end'] = max(redundant['end'], filtered_redundants[-1]['end'])
-                # logger.debug(f"continue")
                 continue
 
         filtered_redundants.append(redundant)
 
-    logger.debug(f"filtered_redundants: {filtered_redundants}")
     return filtered_redundants
+
+
+def preprocess_redundants(redundants:list):
+    if not isinstance(redundants, list):
+        raise BadRequest("Redundants must be in list")
+
+    processed_redundants = []
+    for redundant in redundants:
+        if not isinstance(redundant, dict):
+            raise BadRequest("Every redundant must be described as dict")
+
+        allowable_keys = ['start', 'end', 'filler']
+
+        for key in allowable_keys:
+            if key not in redundant:
+                raise BadRequest(f'There is no {key} in {redundant}')
+
+        for key in redundant:
+            if key not in allowable_keys:
+                raise BadRequest(f'Unrecornized key {key} in {redundant}')
+
+        # import pdb
+        # pdb.set_trace()
+        logger.debug(f"{redundant['start']=}  {isinstance(redundant['start'], numbers.Number)=}")
+        if not all([
+            isinstance(redundant['start'], numbers.Number),
+            isinstance(redundant['end'], numbers.Number),
+        ]):
+            raise BadRequest('Boundaries must be numeric')
+
+        if not all([
+            redundant['start'] >= 0,
+            redundant['end'] >= redundant['start']
+        ]):
+            raise BadRequest("Boundaries must be: 0 <= left <= right")
+
+        processed_redundant = redundant
+        processed_redundant['filler'] = fill_fade_settings(redundant['filler'])
+        processed_redundants.append(processed_redundant)
+
+    return correct_overlapped_boundaries(processed_redundants)
 
 
 def cut_file(dir_path, file_name, redundants, file_name_beep):
@@ -156,12 +189,13 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
     audio = AudioSegment.from_file(file_name, format="mp3")
     bleep = AudioSegment.from_file(file_name_beep, format="mp3")
     bleep = bleep[1000:2000]
-    logger.debug(f"Sorted redundants: {str(redundants)}")
-    handle_redundants(redundants)
+    logger.debug(f"Source redundants: {redundants}")
+    preprocess_redundants(redundants)
+    logger.debug(f"Handled redundants: {redundants}")
 
     for redundant in reversed(redundants):
-        start_redundant = max(redundant['start'] * 1000 - 50, 0)
-        end_redundant = redundant['end'] * 1000 + 50
+        start_redundant = max(redundant['start'] * 1000 - DEFAULT_ADDITION, 0)
+        end_redundant = min(redundant['end'] * 1000 + DEFAULT_ADDITION, len(audio))
         redundant_filler = redundant['filler']
 
         logger.debug(f"redundant_filler before processing: {redundant_filler}")
@@ -175,7 +209,9 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
                 cross_fade = redundant_filler['empty']['cross_fade']
 
                 rest_in_end = len(audio) - end_redundant
+                logger.debug(f'{cross_fade=}, {start_redundant=}, {rest_in_end=}')
                 cross_fade = min(cross_fade, start_redundant, rest_in_end)
+                cross_fade = max(cross_fade, 0)
                 logger.debug(f"Resulted cross_fade: {cross_fade}")
 
                 start_audio = audio[:start_redundant]

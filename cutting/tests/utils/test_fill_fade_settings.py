@@ -1,6 +1,6 @@
 import unittest
 from src.utils.cutting import fill_fade_settings
-from src.utils.cutting import handle_redundants
+from src.utils.cutting import preprocess_redundants
 
 
 DEFAULT_FADE_IN = 150
@@ -50,6 +50,14 @@ test_empty_cross_fade_good_cases = [
         {
             'empty': {
                 'cross_fade': 3000
+            }
+        }
+    ],
+    [
+        'empty',
+        {
+            'empty': {
+                'cross_fade': DEFAULT_CROSS_FADE
             }
         }
     ],
@@ -171,6 +179,12 @@ test_bleep_good_cases = [
         {
             'bleep': {}
         },
+        {
+            'bleep': {}
+        },
+    ],
+    [
+        'bleep',
         {
             'bleep': {}
         },
@@ -348,7 +362,7 @@ class TestOverlappedSettings(unittest.TestCase):
 
     def test_overlapped_cases(self):
         for case in test_overlapped_cases:
-            self.assertEqual(handle_redundants(case[0]), case[1])
+            self.assertEqual(preprocess_redundants(case[0]), case[1])
 
 
 if __name__ == '__main__':

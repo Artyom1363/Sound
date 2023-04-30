@@ -9,6 +9,7 @@ import logging
 import aiofiles
 from src.utils import cut_file
 from src import app_logger
+from src.exceptions import BadRequest
 
 BLEEPING_SOUNDS_DIR = 'bleeping_sounds'
 
@@ -86,7 +87,12 @@ async def predict(response: FileResponse, request: List[UploadFile] = File(..., 
     data = json.loads(json_file.read())
 
     # src_file = os.path.join(dir_path, file_name)
-    out_file = cut_file(query_dir, filename_mp3, data['redundants'], filename_beep)
+    out_file = ''
+    try:
+        out_file = cut_file(query_dir, filename_mp3, data['redundants'], filename_beep)
+    except BadRequest:
+        response.status_code = 400
+        return f"Invalid json"
 
     logger.debug(f'OUTPUT FILE: {out_file}')
 
