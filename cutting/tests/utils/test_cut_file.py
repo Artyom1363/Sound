@@ -44,7 +44,7 @@ test_fade_in_out_cases = [
                 "empty": {
                     "fade_in_out": {
                         'fade_in': 1000,
-                        'fade_out': 100,
+                        'fade_out': 1,
                     }
                 }
             }
@@ -75,6 +75,18 @@ test_interview2 = [
     {'start': 16.53773154362416, 'end': 16.86441904362416, 'filler': 'empty'}
 ]
 
+test_interview2_error = [
+    {'start': 0.5324524365727598, 'end': 3.614523539704482, 'filler': 'empty'},
+    {'start': 1.9541456797297305, 'end': 5.084845373423684, 'filler': 'empty'},
+    {'start': 11.773869346733669, 'end': 12.055276381909547, 'filler': 'empty'},
+    {'start': 20.08028368794326, 'end': 20.160567375886526, 'filler': 'empty'},
+    {'start': 20.381347517730497, 'end': 21.204255319148935, 'filler': 'empty'},
+    {'start': 23.7331914893617, 'end': 24.275106382978723, 'filler': 'empty'},
+    {'start': 13.368583615388982, 'end': 13.534239001053182, 'filler': 'empty'},
+    {'start': 16.64770583267753, 'end': 16.79443540513565, 'filler': 'empty'},
+    {'start': 4.548936501753018, 'end': 6.35863030775224, 'filler': 'bleep'}
+]
+
 
 class TestCutFile(unittest.TestCase):
 
@@ -97,6 +109,7 @@ class TestCutFile(unittest.TestCase):
         os.makedirs(self.test_dirpath, exist_ok=True)
 
         processed_file = cut_file(self.test_dirpath, self.source_audio_filepath, test_interview2, PATH_TO_BLEEPING)
+        processed_file = cut_file(self.test_dirpath, self.source_audio_filepath, test_interview2_error, PATH_TO_BLEEPING)
 
     def test_fade_in_out(self):
         os.makedirs(self.test_dirpath, exist_ok=True)

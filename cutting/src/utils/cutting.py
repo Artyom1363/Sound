@@ -217,8 +217,8 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
     logger.debug(f"Handled redundants: {redundants}")
 
     for redundant in reversed(redundants):
-        start_redundant = max(redundant['start'] * 1000 - DEFAULT_ADDITION, 0)
-        end_redundant = min(redundant['end'] * 1000 + DEFAULT_ADDITION, len(audio))
+        start_redundant = int(max(redundant['start'] * 1000 - DEFAULT_ADDITION, 0))
+        end_redundant = int(min(redundant['end'] * 1000 + DEFAULT_ADDITION, len(audio)))
         redundant_filler = redundant['filler']
 
         logger.debug(f"redundant_filler before processing: {redundant_filler}")
@@ -244,9 +244,17 @@ def cut_file(dir_path, file_name, redundants, file_name_beep):
             elif 'fade_in_out' in redundant_filler['empty']:
                 fade_out = redundant_filler['empty']['fade_in_out']['fade_out']
                 fade_in = redundant_filler['empty']['fade_in_out']['fade_in']
+                # fade_out += 1
+                # fade_in += 1
+                # logger.debug(f'{fade_out=}, {start_redundant=}, {fade_in=}')
+                start_audio = audio[:start_redundant]
+                if fade_in > 0:
+                    start_audio = start_audio.fade_out(fade_out)
 
-                start_audio = audio[:start_redundant].fade_out(fade_out)
-                end_audio = audio[end_redundant:].fade_in(fade_in)
+                end_audio = audio[end_redundant:]
+                if fade_out > 0:
+                    end_audio = end_audio.fade_in(fade_in)
+
                 audio = start_audio + end_audio
             else:
                 raise BadRequest(f"Unrecorgnied redundant filler {redundant_filler}")
