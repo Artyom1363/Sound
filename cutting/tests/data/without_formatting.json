@@ -4,6 +4,6 @@
     {"start": 11.714, "end": 11.94, "filler": {
       "empty" : null
     }},
-    {"start": 20.16, "end": 20.92, "filler": null}
+    {"start": 20.16, "end": 20.92, "filler": "empty"}
   ]
 }

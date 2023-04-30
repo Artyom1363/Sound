@@ -90,8 +90,9 @@ async def predict(response: FileResponse, request: List[UploadFile] = File(..., 
     out_file = ''
     try:
         out_file = cut_file(query_dir, filename_mp3, data['redundants'], filename_beep)
-    except BadRequest:
+    except BadRequest as exception:
         response.status_code = 400
+        logger.info(str(exception))
         return f"Invalid json"
 
     logger.debug(f'OUTPUT FILE: {out_file}')

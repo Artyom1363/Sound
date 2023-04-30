@@ -71,7 +71,6 @@ def fill_fade_settings(redundant_filler: dict):
         res_filler['empty'] = DEFAULT_EMPTY
     elif redundant_filler == 'bleep':
         res_filler['bleep'] = {}
-
     else:
         raise BadRequest("Unrecognised type of filler")
 
@@ -103,7 +102,7 @@ def correct_overlapped_boundaries(redundants:list):
     redundants = sorted(redundants, key=lambda d: d['start'])
     filtered_redundants = []
     for redundant in redundants:
-        logger.debug(f"redundant before: {redundant}")
+        # logger.debug(f"redundant before: {redundant}")
 
         if len(filtered_redundants) == 0:
             filtered_redundants.append(redundant)
@@ -156,7 +155,7 @@ def preprocess_redundants(redundants:list):
 
         # import pdb
         # pdb.set_trace()
-        logger.debug(f"{redundant['start']=}  {isinstance(redundant['start'], numbers.Number)=}")
+        # logger.debug(f"{redundant['start']=}  {isinstance(redundant['start'], numbers.Number)=}")
         if not all([
             isinstance(redundant['start'], numbers.Number),
             isinstance(redundant['end'], numbers.Number),
