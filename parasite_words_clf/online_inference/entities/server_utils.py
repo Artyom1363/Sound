@@ -3,12 +3,14 @@ import torch
 import logging
 import nltk
 import string
+from time import process_time
 from transformers import BertTokenizer, BertModel
 from src.models import ParasiteWordsClfHead
+from src.app_logger import get_logger
 
 
 class WordClassifier:
-    def __init__(self, meta_info):
+    def __init__(self, meta_info, device='cpu'):
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased', padding=True)
         self.bert = BertModel.from_pretrained("bert-base-multilingual-cased")
         self.bert.eval()
@@ -22,19 +24,14 @@ class WordClassifier:
             self.clf_heads[bad_word]['model'] = clf_head
             self.clf_heads[bad_word]['id'] = meta_data['parasite_word_id']
 
-        self.logger = logging.getLogger(type(self).__name__)
-        self.logger.setLevel(logging.INFO)
-        logging_handler = logging.StreamHandler()
-        logging_handler.setLevel(logging.INFO)
-        strfmt = '[%(asctime)s] [%(name)s] [%(levelname)s] > %(message)s'
-        datefmt = '%Y-%m-%d %H:%M:%S'
-        formatter = logging.Formatter(fmt=strfmt, datefmt=datefmt)
-        logging_handler.setFormatter(formatter)
-        self.logger.addHandler(logging_handler)
-        print(self.clf_heads)
+        self.logger = get_logger(type(self).__name__)
+        self.device = device
+        self.to(device)
+        self.logger.info(f'clf heads: {self.clf_heads}')
 
-    def classify(self, text):
+    def predict(self, text):
         self.logger.info(f"Input text: {text}")
+        time_start = process_time()
         sents = nltk.tokenize.sent_tokenize(text)
         parasite_word_indexes = []
         words_count = 0
@@ -49,6 +46,8 @@ class WordClassifier:
 
             tokenized_sent = self.tokenizer(sentence, truncation=True, return_tensors='pt', padding='max_length',
                                             max_length=512)
+
+            tokenized_sent.to(self.device)
 
             with torch.no_grad():
                 model_output = self.bert(**tokenized_sent)
@@ -65,7 +64,7 @@ class WordClassifier:
                     if len(indexes_with_parasite_ids) == 0:
                         continue
                     filtered_embeddings = torch.index_select(word_embeddings, 0,
-                                                             torch.tensor(indexes_with_parasite_ids))
+                                                             torch.tensor(indexes_with_parasite_ids).to(self.device))
                     predictions[bad_word] = meta_data['model'](filtered_embeddings)
 
                     predictions[bad_word] = predictions[bad_word].squeeze(1)
@@ -84,5 +83,14 @@ class WordClassifier:
 
             words_count += len(words_in_sent)
 
+        time_end = process_time()
         self.logger.info(f"Parasite words indexes: {parasite_word_indexes}")
+        self.logger.info(f'Time of processing: {time_end - time_start} seconds')
         return parasite_word_indexes
+
+    def to(self, device: str):
+        self.device = device
+        self.bert.to(device)
+        for bad_word in self.clf_heads:
+            self.clf_heads[bad_word]['model'].to(device)
+        self.logger.info(f'Model set to {device}')
