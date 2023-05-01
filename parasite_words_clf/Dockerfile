@@ -6,6 +6,8 @@ COPY requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN pip install gdown
+
 COPY ./src ./src
 
 COPY ./online_inference ./online_inference
@@ -16,6 +18,6 @@ RUN pip install -e .
 
 EXPOSE 8000
 
-CMD ["python3", "online_inference/server.py"]
+CMD ["python3", "online_inference/server.py", "--prod"]
 
 
