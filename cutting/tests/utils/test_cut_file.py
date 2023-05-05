@@ -21,6 +21,7 @@ test_cross_at_start = [
     }
 ]
 
+
 test_fade_in_out_cases = [
     [
         {
@@ -93,9 +94,10 @@ class TestCutFile(unittest.TestCase):
     def setUp(self) -> None:
         self.source_audio_filepath = os.path.join(TEST_DATA_DIR, 'interview2.mp3')
         self.test_dirpath = os.path.join(TEST_DATA_DIR, 'tmp')
+        os.makedirs(self.test_dirpath, exist_ok=True)
+
 
     def test_cross_fade(self):
-        os.makedirs(self.test_dirpath, exist_ok=True)
 
         processed_file = cut_file(self.test_dirpath, self.source_audio_filepath, test_cross_at_start, PATH_TO_BLEEPING)
 
@@ -106,13 +108,11 @@ class TestCutFile(unittest.TestCase):
         self.assertEqual(len(source_audio[1500:]), len(processed_audio[500:]))
 
     def test_interview2(self):
-        os.makedirs(self.test_dirpath, exist_ok=True)
 
         processed_file = cut_file(self.test_dirpath, self.source_audio_filepath, test_interview2, PATH_TO_BLEEPING)
         processed_file = cut_file(self.test_dirpath, self.source_audio_filepath, test_interview2_error, PATH_TO_BLEEPING)
 
     def test_fade_in_out(self):
-        os.makedirs(self.test_dirpath, exist_ok=True)
 
         processed_file = cut_file(self.test_dirpath, self.source_audio_filepath, test_fade_in_out_cases[0], PATH_TO_BLEEPING)
 
@@ -130,9 +130,7 @@ class TestCutFile(unittest.TestCase):
         # self.assertEqual(len(source_audio[0:300]), len(processed_audio[0:300]))
         self.assertEqual(len(source_audio[1100:]), len(processed_audio[600:]))
 
-
     def test_bleep(self):
-        os.makedirs(self.test_dirpath, exist_ok=True)
 
         processed_file = cut_file(self.test_dirpath, self.source_audio_filepath, test_bleep, PATH_TO_BLEEPING)
 
@@ -144,6 +142,12 @@ class TestCutFile(unittest.TestCase):
         self.assertEqual(len(source_audio), len(processed_audio))
 
 
+    def test_none_redundants(self):
+        processed_file = cut_file(self.test_dirpath, self.source_audio_filepath, None, PATH_TO_BLEEPING)
+
+        source_audio = AudioSegment.from_file(self.source_audio_filepath, format="mp3")
+        processed_audio = AudioSegment.from_file(processed_file, format="mp3")
+        self.assertEqual(len(source_audio), len(processed_audio))
 
 if __name__ == '__main__':
     unittest.main()

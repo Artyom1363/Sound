@@ -159,6 +159,9 @@ def correct_overlapped_boundaries(redundants:list):
 
 
 def preprocess_redundants(redundants:list):
+    if redundants is None:
+        return []
+
     if not isinstance(redundants, list):
         raise BadRequest("Redundants must be in list")
 
