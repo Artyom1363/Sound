@@ -5,13 +5,34 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"web/internal/config"
 	"web/internal/handler"
+	"web/internal/handler/middleware"
+	"web/internal/handler/websocket"
 )
 
 func InitRouter() {
+	websocket.InitStorage()
+
 	r := mux.NewRouter()
 	r.HandleFunc("/me", handler.MeHandler)
+	r.HandleFunc("/", handler.Index)
+	r.HandleFunc("/socket", websocket.SocketReaderCreate)
+	r.HandleFunc("/getText", handler.GetText)
+	r.HandleFunc("/getResultFile", handler.GetResultFile)
+	//r.HandleFunc("/getResultText", handler.GetResultText)
+
+	r.HandleFunc("/health/parasite", handler.HealthParasite)
+	r.HandleFunc("/health/transcribe", handler.HealthTranscribe)
+	r.HandleFunc("/health/mezdo", handler.HealthMezdo)
+	r.HandleFunc("/health/cutter", handler.HealthCutter)
+
 	r.HandleFunc("/upload", handler.Upload)
+	r.HandleFunc("/process", handler.Process)
+	r.HandleFunc("/render", handler.Render)
+
+	r.Use(middleware.Session)
+
 	//r.Handle("/", http.FileServer(http.Dir("./static")))
 	r.PathPrefix("/fileserver/").Handler(http.StripPrefix("/fileserver/", http.FileServer(http.Dir("./fileserver"))))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
@@ -20,11 +41,12 @@ func InitRouter() {
 
 	srv := &http.Server{
 		Handler: r,
-		Addr:    "127.0.0.1:8000",
+		Addr:    config.BackendAddr,
 		// Good practice: enforce timeouts for servers you create!
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 5 * time.Minute,
+		ReadTimeout:  5 * time.Minute,
 	}
 
+	log.Printf("Server started at %s", srv.Addr)
 	log.Fatal(srv.ListenAndServe())
 }

@@ -6,6 +6,10 @@
     height: 80px;
 }
 
+m1 {
+    background-color: rgb(255, 0, 0);
+}
+
 /*#myForm {*/
 /*    width: 500px;*/
 /*}*/
@@ -13,3 +17,46 @@
 /*.file-input {*/
 /*    width: 300px;*/
 /*}*/
+
+.welcome {
+    height: 70vh;
+    /*background-color: pink;*/
+}
+
+.welcome-title {
+    /*font-size: 45px;*/
+    /*margin-top: 150px;*/
+    width: 70%;
+    margin-right: auto;
+    margin-left: auto;
+    text-align: center;
+}
+
+.welcome-title .badge {
+    font-size: 18px;
+    padding: 12px 15px;
+    margin: 10px;
+    opacity: 1;
+}
+
+.welcome-title .badge:hover{
+    opacity: 0.7;
+    transition: 0.3s;
+}
+
+.note {
+    width: 400px;
+    color: #656565;
+    padding: 20px;
+}
+
+#note-health {
+    position: relative;
+    bottom: 0;
+}
+
+.zoom {
+    margin-right: auto;
+    margin-left: auto;
+    width: 250px;
+}
