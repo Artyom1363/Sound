@@ -1,0 +1,7 @@
+WORKER_NUM: 1
+content_storage_path: "./content"
+DEVICE: "cpu"
+model_size: "large-v2"
+compute_type: "float16"
+profanity_file_path: "./conf/profanity.txt"
+language_code: 'ru'
