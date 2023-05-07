@@ -1,12 +1,13 @@
-torch==2.0.0
+-i https://download.pytorch.org/whl/cu118
+torch==2.0.0 
 torchaudio==2.0.1
 fastapi
 pydantic
 DeepFilterLib==0.4.0
 deepfilternet==0.4.0
-stable-ts
 uvicorn[standard]
 python-multipart
 sympy 
-pip install git+https://github.com/m-bain/whisperx.git
+ffmpeg-python
+git+https://github.com/m-bain/whisperx.git@v3
 faster-whisper

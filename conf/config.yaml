@@ -5,3 +5,4 @@ model_size: "large-v2"
 compute_type: "float16"
 profanity_file_path: "./conf/profanity.txt"
 language_code: 'ru'
+filter_batch_size: 1000000

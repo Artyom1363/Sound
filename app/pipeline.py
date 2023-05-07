@@ -1,8 +1,9 @@
-from df.enhance import enhance, init_df, save_audio
+from df.enhance import enhance, init_df
 from app.backend_tools import read_config
-from faster_whisper import WhisperModel
 import whisperx
 import torchaudio
+import ffmpeg
+import torch
 config = read_config()
 
 
@@ -14,8 +15,9 @@ def process_init():
     """
     DFmodel, df_state, _ = init_df(
         post_filter=True, config_allow_defaults=True)
-    whisper_model = WhisperModel(
-        config["model_size"], device=config['DEVICE'], compute_type=config["compute_type"])
+    # whisper_model = WhisperModel(
+    #     )
+    whisper_model = whisperx.load_model(config["model_size"], device=config['DEVICE'], compute_type=config["compute_type"],language = 'ru')
     profanity_set = get_profanity_set(config["profanity_file_path"])
     model_a, metadata = whisperx.load_align_model(
         language_code=config['language_code'], device=config['DEVICE'])
@@ -73,26 +75,45 @@ def get_profanity_set(filename: str):
 def proccess_audio(audio_path, whisper_model, deepfilter_model, df_state, profanity_set, model_a, metadata):
     # возвращает audio, text и таймштампы с матами
     # df_state.sr() - частота дискретизации
-    audio, sound_rate = torchaudio.load(audio_path)
-    if config["DEVICE"] == "cuda":
-        audio = audio.cuda()
-    if sound_rate != df_state.sr():
-        audio = torchaudio.functional.resample(
-            audio, sound_rate, df_state.sr(), lowpass_filter_width=128)
+    audio_path_wav_48kHz = audio_path[:audio_path.rfind('.')]+'_48kHz.wav'
+    process1 = (
+    ffmpeg
+    .input(audio_path)
+    .output(audio_path_wav_48kHz, **{'ar': '48000',})
+    .run()
+    )
 
-    enhanced = enhance(deepfilter_model, df_state, audio)
-    enhanced_audio_path = audio_path[:audio_path.rfind('.')]+"_enhanced.mp3"
-    save_audio(enhanced_audio_path, enhanced, df_state.sr())
 
-    result = whisper_model.transcribe(enhanced_audio_path, language=config["language_code"])
+    audio, sound_rate = torchaudio.load(audio_path_wav_48kHz)
+    enhanced_list = []
+    audio = audio.contiguous()
+    batch_size = config['filter_batch_size']
+    for batch in range(audio.shape[1]//batch_size):
+        enhanced_list.append(enhance(deepfilter_model, df_state, audio[:,batch_size*batch:batch_size*(batch+1)]))
+    enhanced_list.append(enhance(deepfilter_model, df_state, audio[:,batch_size*(audio.shape[1]//batch_size):]).cpu())
+    enhanced_audio_path = audio_path[:audio_path.rfind('.')]+"_enhanced.wav"
+    torchaudio.save(enhanced_audio_path, torch.concat(enhanced_list,dim=1), df_state.sr())
+    for tensor in enhanced_list:
+        del tensor
+    audio_path_mp3_16kHz = enhanced_audio_path[:enhanced_audio_path.rfind('.')]+'_16kHz.mp3'
+    process2 = (
+    ffmpeg
+    .input(enhanced_audio_path)
+    .output(audio_path_mp3_16kHz, **{'ar': '48000',})
+    .run()
+    )
 
-    # align whisper output
-    result_aligned = whisperx.align(
-        result["segments"], model_a, metadata, enhanced_audio_path, config["DEVICE"])
+    
+    audio, sound_rate = torchaudio.load(audio_path_mp3_16kHz)
+       
+    audio = whisperx.load_audio(audio_path_mp3_16kHz)
+    result = whisper_model.transcribe(audio, batch_size=32)
 
-    # result_dict = result.to_dict()
-    text = result["text"]
+
+    result_aligned = whisperx.align(result["segments"], model_a, metadata, audio, config["DEVICE"])
     words = get_timestamps_and_profanity(
         result_aligned['word_segments'], profanity_set)
-
+    text = ''
+    for seg in result["segments"]:
+        text += seg['text']
     return enhanced_audio_path, text, words

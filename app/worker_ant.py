@@ -14,7 +14,7 @@ def worker_ant(queue: mp.Queue, err_queue: mp.Queue):
         try:  # try...except чтобы сервер не падал из-за ошибок
 
             open(audiofile_path+'.blocked', 'wb')  # aka mutex
-            enhanced_audio_path, text, words = proccess_audio(*models)
+            enhanced_audio_path, text, words = proccess_audio(audiofile_path,*models)
 
             response_json = {
                 "text": text,
