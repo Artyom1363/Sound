@@ -1,6 +1,7 @@
 package config
 
-const ParasiteAddr = "http://195.133.60.176:8000"
+// const ParasiteAddr = "http://195.133.60.176:8000"
+const ParasiteAddr = "http://95.64.151.158:8080"
 const TranscribeAddr = "http://95.64.151.158:8000"
 const MezdoAddr = "http://195.133.60.176:8001"
 const CutterAddr = "http://195.133.60.176:8002"
