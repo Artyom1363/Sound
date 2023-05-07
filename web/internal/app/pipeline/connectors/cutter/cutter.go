@@ -10,9 +10,9 @@ import (
 	"os"
 	"strings"
 	"time"
-	"web/internal/app/audiomarkers"
-	"web/internal/app/files"
-	"web/internal/config"
+	"web/config"
+	"web/internal/app/pipeline/audiomarkers"
+	"web/utils/files"
 )
 
 type CutterRequest struct {

@@ -3,9 +3,9 @@ package audiomarkers
 import (
 	"fmt"
 	"github.com/goccy/go-json"
-	"web/internal/app/connectors/mezdo"
-	"web/internal/app/connectors/transcribe"
-	"web/internal/app/files"
+	"web/internal/app/pipeline/connectors/mezdo"
+	"web/internal/app/pipeline/connectors/transcribe"
+	"web/utils/files"
 )
 
 type AudioMarkers []AudioMarker

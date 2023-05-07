@@ -14,8 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"web/internal/app/files"
-	"web/internal/config"
+	"web/config"
+	"web/utils/files"
 )
 
 type Resp struct {

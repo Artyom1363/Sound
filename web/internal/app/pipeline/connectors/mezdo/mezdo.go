@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"web/internal/config"
+	"web/config"
 )
 
 type MezdoItems []MezdoItem

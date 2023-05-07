@@ -15,7 +15,7 @@ const (
 	TranscribeAPIHealth     = TranscribeAddr + "/ready/"
 	TranscribeAPI           = TranscribeAddr + "/transcribe/"
 	TranscribeAPIResultText = TranscribeAddr + "/get_text_by_id"
-	TranscribeAPIResultFile = TranscribeAddr + "/get_file_by_id"
+	TranscribeAPIResultFile = TranscribeAddr + "/get_data_by_id"
 )
 
 const (

@@ -15,11 +15,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"web/internal/app/audiomarkers"
-	"web/internal/app/connectors/cutter"
+	"web/config"
 	"web/internal/app/pipeline"
-	"web/internal/app/textmarkers"
-	"web/internal/config"
+	"web/internal/app/pipeline/audiomarkers"
+	"web/internal/app/pipeline/connectors/cutter"
+	"web/internal/app/pipeline/textmarkers"
 )
 
 const MaxAudioDuration = time.Minute * 30

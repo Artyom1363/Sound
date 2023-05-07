@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"web/internal/config"
+	"web/config"
 )
 
 func Run(text string) ([]int, error) {

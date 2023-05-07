@@ -3,7 +3,7 @@ package textmarkers
 import (
 	"fmt"
 	"strings"
-	"web/internal/app/files"
+	"web/utils/files"
 )
 
 const markerParasite = "<span style=\"background-color: rgb(255, 255, 0);\">%s</span>"

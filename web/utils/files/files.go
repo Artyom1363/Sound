@@ -3,7 +3,7 @@ package files
 import (
 	"fmt"
 	"os"
-	"web/internal/app/generator"
+	"web/utils/generator"
 )
 
 func SaveToTextFile(data []byte) (string, error) {

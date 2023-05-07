@@ -5,7 +5,7 @@ import (
 	_ "github.com/u2takey/ffmpeg-go"
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 	"strings"
-	"web/internal/app/connectors/transcribe"
+	"web/internal/app/pipeline/connectors/transcribe"
 )
 
 func Run(inputPath string, transcription *transcribe.TranscribeText, badWordsMarkers []int, parasiteWordsMarkers []int) (string, error) {
