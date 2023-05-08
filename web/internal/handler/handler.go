@@ -20,6 +20,7 @@ import (
 	"web/internal/app/pipeline/audiomarkers"
 	"web/internal/app/pipeline/connectors/cutter"
 	"web/internal/app/pipeline/textmarkers"
+	"web/utils/generator"
 )
 
 const MaxAudioDuration = time.Minute * 30
@@ -30,7 +31,8 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func Index(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/static/", http.StatusTemporaryRedirect)
+	//http.Redirect(w, r, "/static/", http.StatusTemporaryRedirect)
+	http.ServeFile(w, r, "static/index.html")
 }
 
 func Upload(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +54,7 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 		//fmt.Fprintf(w, "%v", handler.Header)
-		filePath := "./fileserver/" + handler.Filename
+		filePath := "./fileserver/" + generator.GenString(8) + ".txt"
 		f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0666)
 		if err != nil {
 			fmt.Println(err)

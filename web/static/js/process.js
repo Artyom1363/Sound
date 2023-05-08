@@ -17,6 +17,7 @@ function showProcessStart() {
     pleerBlock.style.display = "none";
     pleerProcessedBlock.style.display = "none";
     downloadBlock.style.display = "none";
+    processActiveInfo.innerHTML = "";
 
     wavesurfer.clearRegions();
 }

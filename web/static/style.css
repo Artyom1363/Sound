@@ -62,12 +62,12 @@ m1 {
 }
 
 #process-active {
-    height: 70vh;
+    height: 100vh;
 }
 
 #process-active-animation {
     position: absolute;
-    bottom: 150px;
+    bottom: 100px;
     right: 20%;
     width: 450px;
 }

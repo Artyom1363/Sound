@@ -24,7 +24,7 @@ type Resp struct {
 
 func Run(filePath string) (string, string, *TranscribeText, []int, int, error) {
 	client := &http.Client{
-		Timeout: time.Minute * 2,
+		Timeout: config.ParasiteUploadTimeout,
 	}
 	// New multipart writer.
 	body := &bytes.Buffer{}
@@ -99,12 +99,12 @@ func Run(filePath string) (string, string, *TranscribeText, []int, int, error) {
 }
 
 func waitResult(resultID int) error {
-	timeout := time.After(5 * time.Minute)
+	timeout := time.After(config.ParasiteProcessTimeout)
 	pollInt := time.Second
 
 	for {
 		select {
-		case <-time.After(time.Second * 3):
+		case <-time.After(config.ParasiteCheckCompleteTimeout):
 			ok, err := tryGetResult(resultID)
 			if err != nil {
 				return fmt.Errorf("%v", err)
@@ -114,7 +114,7 @@ func waitResult(resultID int) error {
 			}
 			log.Printf("still wait")
 		case <-timeout:
-			return fmt.Errorf("timeout")
+			return fmt.Errorf("timeout while process file")
 		}
 		time.Sleep(pollInt)
 	}
