@@ -1,18 +1,18 @@
-const socketAPI = 'ws://' + server + '/socket'
+const socketAPI = protocolWS + server + '/socket'
 
-const fileServerAPI = 'http://' + server + "/"
-const uploadAPI = 'http://' + server + '/upload'
+const fileServerAPI = protocol + server + "/"
+const uploadAPI = protocol + server + '/upload'
 
-const getTextAPI = 'http://' + server + '/getText?'
-const processAPI = 'http://' + server + '/process?'
-const renderAPI = 'http://' + server + '/render'
-const getResultTextAPI = 'http://' + server + '/getResultText?'
-const getResultFileAPI = 'http://' + server + '/getResultFile?'
+const getTextAPI = protocol + server + '/getText?'
+const processAPI = protocol + server + '/process?'
+const renderAPI = protocol + server + '/render'
+const getResultTextAPI = protocol + server + '/getResultText?'
+const getResultFileAPI = protocol + server + '/getResultFile?'
 
-const healthParasiteAPI = 'http://' + server + '/health/parasite'
-const healthTranscribeAPI = 'http://' + server + '/health/transcribe'
-const healthMezdoAPI = 'http://' + server + '/health/mezdo'
-const healthCutterAPI = 'http://' + server + '/health/cutter'
+const healthParasiteAPI = protocol + server + '/health/parasite'
+const healthTranscribeAPI = protocol + server + '/health/transcribe'
+const healthMezdoAPI = protocol + server + '/health/mezdo'
+const healthCutterAPI = protocol + server + '/health/cutter'
 
 
 
