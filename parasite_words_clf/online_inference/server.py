@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from typing import List
 import logging
 from pathlib import Path
+from pydantic import BaseModel
 
 from entities import WordClassifier
 from src.entities import read_predict_pipeline_params
@@ -35,6 +36,10 @@ MODEL_PATHS = {
 }
 
 
+class TextRequest(BaseModel):
+    text: str
+
+
 @app.get("/")
 def read_root():
     return "Parasite words classifier online"
@@ -60,9 +65,10 @@ def read_health():
     return "Model is not ready " if model is None else "Model is ready"
 
 
-@app.get("/predict/", response_model=List[int])
-def predict(request: str):
-    return model.predict(request)
+@app.post("/predict/", response_model=List[int])
+def predict(request: TextRequest):
+    logger.info(f"Text of request: {request.text}")
+    return model.predict(request.text)
 
 
 if __name__ == "__main__":

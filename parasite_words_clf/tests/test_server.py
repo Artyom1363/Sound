@@ -87,8 +87,9 @@ class TestInferenceModelServer(unittest.TestCase):
     def test_prediction_big_text(self):
 
         for test_case in TEST_DATA:
-            response = requests.get(
-                self.url + f"/predict/?request={test_case}",
+            response = requests.post(
+                self.url + f"/predict/",
+                json={'text': test_case}
                 # json={"data": [DATA], "features": FEATURES}
             )
             # predicts = response.json()
@@ -103,8 +104,9 @@ class TestInferenceModelServer(unittest.TestCase):
         counter = 0
         total_cases = len(test_cases_koroche)
         for test_case, labels in test_cases_koroche.items():
-            response = requests.get(
-                self.url + f"/predict/?request={test_case}",
+            response = requests.post(
+                self.url + f"/predict/",
+                json={'text': test_case}
             )
             self.assertEqual(response.status_code, 200)
             predicts = response.json()
@@ -115,9 +117,9 @@ class TestInferenceModelServer(unittest.TestCase):
         counter = 0
         total_cases = len(test_cases_tipa)
         for test_case, labels in test_cases_tipa.items():
-            response = requests.get(
-                self.url + f"/predict/?request={test_case}",
-                # json={"data": [DATA], "features": FEATURES}
+            response = requests.post(
+                self.url + f"/predict/",
+                json={'text': test_case}
             )
             self.assertEqual(response.status_code, 200)
             predicts = response.json()
@@ -132,9 +134,9 @@ class TestInferenceModelServer(unittest.TestCase):
     def test_prediction_common(self):
 
         for test_case, labels in test_cases_common.items():
-            response = requests.get(
-                self.url + f"/predict/?request={test_case}",
-                # json={"data": [DATA], "features": FEATURES}
+            response = requests.post(
+                self.url + f"/predict/",
+                json={'text': test_case}
             )
             self.assertEqual(response.status_code, 200)
             # predicts = response.json()
@@ -149,16 +151,24 @@ class TestInferenceModelServer(unittest.TestCase):
         self.assertEqual(response.json(), "Parasite words classifier online")
 
     def test_empty_input(self):
-        response = requests.get(
-            self.url + f"/predict/?request=",
+        response = requests.post(
+            self.url + f"/predict/",
+            json={'text': ''}
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), [])
+
+        response = requests.post(
+            self.url + f"/predict/",
+            json={'text': None}
+        )
+        self.assertEqual(response.status_code, 422)
         # print("response with empty input: ", response.json())
 
     def test_long_sent(self):
-        response = requests.get(
-            self.url + f"/predict/?request={TEST_LONG_SENT}",
+        response = requests.post(
+            self.url + f"/predict/",
+            json={'text': TEST_LONG_SENT}
         )
         self.assertEqual(response.status_code, 200)
         # print("response with long input: ", response.json())

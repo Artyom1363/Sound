@@ -31,8 +31,10 @@ class WordClassifier:
         self.to(device)
         self.logger.info(f'clf heads: {self.clf_heads}')
 
-    def predict(self, text):
+    def predict(self, text:str):
         self.logger.info(f"Input text: {text}")
+        if text is None:
+            return []
         process_time_start = process_time()
         datetime_start = datetime.now()
         sents = nltk.tokenize.sent_tokenize(text)
