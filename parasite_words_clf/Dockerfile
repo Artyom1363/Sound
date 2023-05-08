@@ -8,11 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 RUN pip install gdown
 
-COPY ./src ./src
-
-COPY ./online_inference ./online_inference
-
-COPY setup.py ./
+COPY ./ ./
 
 RUN pip install -e .
 
