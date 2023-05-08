@@ -10,6 +10,7 @@ import logging
 from pathlib import Path
 
 from entities import WordClassifier
+from src.entities import read_predict_pipeline_params
 from src.app_logger import get_logger
 
 
@@ -18,8 +19,7 @@ app = FastAPI()
 logger = get_logger(__name__)
 
 
-ID_SHORT_CLF_MODEL = '1b2s8fZESNf6idt6csRhoVmVr8m_VRCeJ'
-ID_TIPA_CLF_MODEL = '1E3yxQsUQoGbk-_8eCsqc4l7Gb8_3SwqT'
+PATH_TO_CONFIG = "configs/predict_config.yaml"
 
 DIR_WITH_MODELS = 'online_inference/models'
 
@@ -43,10 +43,11 @@ def read_root():
 @app.on_event("startup")
 def loading_model():
     nltk.download('punkt')
-
+    params = read_predict_pipeline_params(PATH_TO_CONFIG)
     os.makedirs(DIR_WITH_MODELS, exist_ok=True)
-    gdown.download(id=ID_SHORT_CLF_MODEL, output=MODEL_PATHS['короче']['model_path'], quiet=False, fuzzy=True)
-    gdown.download(id=ID_TIPA_CLF_MODEL, output=MODEL_PATHS['типа']['model_path'], quiet=False, fuzzy=True)
+    logger.info(f"params: {params}")
+    gdown.download(id=params.id_short_clf_model, output=MODEL_PATHS['короче']['model_path'], quiet=False, fuzzy=True)
+    gdown.download(id=params.id_tipa_clf_model, output=MODEL_PATHS['типа']['model_path'], quiet=False, fuzzy=True)
 
     global model
     device = 'cuda' if torch.cuda.is_available() else 'cpu'

@@ -48,23 +48,35 @@ class WordClassifier:
             self.logger.info(f"Splitted words: {words_in_sent} ")
 
             tokenized_sent = self.tokenizer(sentence,
-                truncation=True, return_tensors='pt',
-                padding='max_length', max_length=512)
+                                            truncation=True, return_tensors='pt',
+                                            padding='max_length', max_length=512)
 
             tokenized_sent.to(self.device)
 
             with torch.no_grad():
-                model_output = self.bert(**tokenized_sent)
-                word_embeddings = model_output[0].squeeze()
-
+                word_embeddings = torch.tensor([])
                 predictions = {}
                 counters = {}
+                bw_to_inds_with_parasite_ids = {}
+                empty_sentence = True
 
                 for bad_word, meta_data in self.clf_heads.items():
-                    indexes_with_parasite_ids = [index for (index, item) in
+
+                    bw_to_inds_with_parasite_ids[bad_word] = [
+                        index for (index, item) in
                         enumerate(tokenized_sent['input_ids'][0].tolist()) if
                         item == meta_data['id']
                     ]
+                    if len(bw_to_inds_with_parasite_ids[bad_word]) > 0:
+                        empty_sentence = False
+
+                if not empty_sentence:
+                    model_output = self.bert(**tokenized_sent)
+                    word_embeddings = model_output[0].squeeze()
+                    print(type(word_embeddings))
+
+                for bad_word, indexes_with_parasite_ids in bw_to_inds_with_parasite_ids.items():
+                    model = self.clf_heads[bad_word]['model']
 
                     if len(indexes_with_parasite_ids) == 0:
                         continue
@@ -73,7 +85,8 @@ class WordClassifier:
                         word_embeddings, 0,
                         torch.tensor(indexes_with_parasite_ids).to(self.device)
                     )
-                    predictions[bad_word] = meta_data['model'](filtered_embeddings)
+
+                    predictions[bad_word] = model(filtered_embeddings)
 
                     predictions[bad_word] = predictions[bad_word].squeeze(1)
                     predictions[bad_word] = (predictions[bad_word] > 0.5).float().tolist()
