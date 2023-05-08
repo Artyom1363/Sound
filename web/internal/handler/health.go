@@ -4,7 +4,7 @@ import (
 	"io"
 	"net/http"
 	"time"
-	"web/internal/config"
+	"web/config"
 )
 
 const (

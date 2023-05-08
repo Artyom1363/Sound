@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 	"time"
-	"web/internal/config"
+	"web/config"
 	"web/internal/handler"
 	"web/internal/handler/middleware"
 	"web/internal/handler/websocket"

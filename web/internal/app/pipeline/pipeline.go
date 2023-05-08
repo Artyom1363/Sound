@@ -3,12 +3,12 @@ package pipeline
 import (
 	"fmt"
 	"log"
-	"web/internal/app/audiomarkers"
-	"web/internal/app/connectors/cutter"
-	"web/internal/app/connectors/mezdo"
-	"web/internal/app/connectors/parasite"
-	"web/internal/app/connectors/transcribe"
-	"web/internal/app/textmarkers"
+	"web/internal/app/pipeline/audiomarkers"
+	"web/internal/app/pipeline/connectors/cutter"
+	"web/internal/app/pipeline/connectors/mezdo"
+	"web/internal/app/pipeline/connectors/parasite"
+	"web/internal/app/pipeline/connectors/transcribe"
+	"web/internal/app/pipeline/textmarkers"
 	"web/internal/handler/websocket"
 )
 
@@ -78,7 +78,9 @@ func (p *Pipeline) Start() {
 		return
 	}
 
-	mess := fmt.Sprintf(`{"status":"success", "source":"process", "audio":"%s", "cutAudio":"%s", "text":"%s", "audioMarkers":"%s"}`, p.resultAudioFilePath, p.resultCutAudioFilePath, p.resultTextFilePath, p.resultAudioMarkersPath)
+	mess := fmt.Sprintf(
+		`{"status":"success", "source":"process", "audio":"%s", "cutAudio":"%s", "text":"%s", "audioMarkers":"%s"}`,
+		p.sourceAudioFilePath, p.resultCutAudioFilePath, p.resultTextFilePath, p.resultAudioMarkersPath)
 	websocket.SendMessage(p.userSession, mess)
 	log.Printf("pipline finished")
 }
@@ -95,7 +97,7 @@ func NewChecker(us string) *Checker {
 
 func (c *Checker) processErr(err error, module string) bool {
 	if err != nil {
-		log.Printf("module: %v", err)
+		log.Printf("module %s: %v", module, err)
 		mess := fmt.Sprintf(`{"status":"error", "source":"process", "module":"%s", "error":"%s"}`, module, err)
 		websocket.SendMessage(c.userSession, mess)
 		return false

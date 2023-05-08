@@ -15,14 +15,15 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"web/internal/app/audiomarkers"
-	"web/internal/app/connectors/cutter"
+	"web/config"
 	"web/internal/app/pipeline"
-	"web/internal/app/textmarkers"
-	"web/internal/config"
+	"web/internal/app/pipeline/audiomarkers"
+	"web/internal/app/pipeline/connectors/cutter"
+	"web/internal/app/pipeline/textmarkers"
+	"web/utils/generator"
 )
 
-const MaxAudioDuration = time.Second * 120
+const MaxAudioDuration = time.Minute * 30
 
 func MeHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
@@ -30,7 +31,8 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func Index(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/static/", http.StatusTemporaryRedirect)
+	//http.Redirect(w, r, "/static/", http.StatusTemporaryRedirect)
+	http.ServeFile(w, r, "static/index.html")
 }
 
 func Upload(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +54,7 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 		//fmt.Fprintf(w, "%v", handler.Header)
-		filePath := "./fileserver/" + handler.Filename
+		filePath := "./fileserver/" + generator.GenString(8) + ".txt"
 		f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0666)
 		if err != nil {
 			fmt.Println(err)
@@ -67,14 +69,14 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(fmt.Sprintf("Неверный формат файла. Загружайте только mp3!")))
 			return
 		}
-		if meta.Length() > MaxAudioDuration {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(fmt.Sprintf("Лимит продолжительности аудио: 2 минуты. "+
-				"Продолжительность загруженного файла: %f секунд", meta.Length().Seconds(),
-			)))
-			return
-		}
-		log.Printf("Audio duration: %f sec.", meta.Length().Seconds())
+		//if meta.Length() > MaxAudioDuration {
+		//	w.WriteHeader(http.StatusBadRequest)
+		//	w.Write([]byte(fmt.Sprintf("Лимит продолжительности аудио: 30 минут. "+
+		//		"Продолжительность загруженного файла: %f секунд", meta.Length().Seconds(),
+		//	)))
+		//	return
+		//}
+		log.Printf("Audio duration: %f minutes", meta.Length().Minutes())
 
 		w.Write([]byte("/fileserver/" + handler.Filename))
 	}
