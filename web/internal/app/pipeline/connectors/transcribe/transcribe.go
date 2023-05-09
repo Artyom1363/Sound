@@ -53,6 +53,7 @@ func Run(filePath string) (string, string, *TranscribeText, []int, int, error) {
 	if err != nil {
 		return "", "", nil, nil, 0, fmt.Errorf("fail to create request: %v", err)
 	}
+
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	rsp, err := client.Do(req)
 	if err != nil {
@@ -60,7 +61,8 @@ func Run(filePath string) (string, string, *TranscribeText, []int, int, error) {
 	}
 
 	if rsp.StatusCode != http.StatusOK {
-		return "", "", nil, nil, 0, fmt.Errorf("request failed with response code: %d", rsp.StatusCode)
+		return "", "", nil, nil, 0, fmt.Errorf("request failed with response code: %d, file: %s",
+			rsp.StatusCode, filePath)
 	}
 
 	rspBody, err := io.ReadAll(rsp.Body)
