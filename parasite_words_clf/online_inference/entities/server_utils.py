@@ -45,7 +45,7 @@ class WordClassifier:
             sentence = sentence.lower()
             self.logger.info(f"Sentence: {sentence}")
             words_in_sent = nltk.word_tokenize(sentence)
-            words_in_sent = [word for word in words_in_sent if word not in string.punctuation]
+            words_in_sent = [word for word in words_in_sent if (word not in string.punctuation and word != '...')]
 
             self.logger.info(f"Splitted words: {words_in_sent} ")
 
