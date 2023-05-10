@@ -16,7 +16,7 @@ class WordClassifier:
             'bert-base-multilingual-cased', padding=True)
         self.bert = BertModel.from_pretrained("bert-base-multilingual-cased")
         self.bert.eval()
-        self.context_independent_bad_words = ['ну']
+        self.context_independent_bad_words = ['ну', 'блин']
 
         self.clf_heads = {}
         for bad_word, meta_data in meta_info.items():
