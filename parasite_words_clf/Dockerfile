@@ -6,11 +6,14 @@ COPY requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+RUN pip install gdown
+
+COPY ./ ./
+
+RUN pip install -e .
 
 EXPOSE 8000
 
-# CMD  bash
-# CMD export PYTHONPATH=$PYTHONPATH:/usr/src/app
-# CMD pwd
-# CMD python3 online_inference/server.py
+CMD ["python3", "online_inference/server.py", "--prod"]
+
+
