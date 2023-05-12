@@ -1,0 +1,9 @@
+{"redundants":
+  [{"start": 0.86, "end": 1.12, "filler": "empty"},
+    {"start": 4.066, "end": 4.3, "filler": "bleep"},
+    {"start": 11.714, "end": 11.94, "filler": {
+      "empty" : null
+    }},
+    {"start": 20.16, "end": 20.92, "filler": "empty"}
+  ]
+}

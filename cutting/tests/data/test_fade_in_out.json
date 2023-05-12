@@ -1,0 +1,39 @@
+{"redundants":
+  [
+    {"start": 3, "end": 3.1, 
+      "filler": {
+        "empty" : {
+          "fade_in_out" : {
+            "fade_in": null,
+            "fade_out": null
+          }
+        }
+      }
+    },
+    {"start": 4, "end": 4.1, 
+      "filler": {
+        "empty" : {
+          "fade_in_out" : {}
+        }
+      }
+    },
+    {"start": 5, "end": 5.1, 
+      "filler": {
+        "empty" : {
+          "fade_in_out" : null
+        }
+      }
+    },
+    {"start": 9, "end": 10, 
+      "filler": {
+        "empty" : {
+          "fade_in_out" : {
+            "fade_in": 5000,
+            "fade_out": 5000
+          }
+        }
+      }
+    }
+    
+  ]
+}
