@@ -1,3 +1,9 @@
 .DS_Store
 __pycache__/
 venv/
+*.mp3
+*.wav
+*.idea*
+*.pt
+online_inference/models/
+online_inference/data/

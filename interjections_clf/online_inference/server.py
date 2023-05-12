@@ -27,6 +27,7 @@ num_labels = 6
 HOST = "95.64.151.158"
 PORT = "8000"
 URL = f"http://{HOST}:{PORT}"
+THRESHOLD = 0.2
 
 logger = get_logger(__name__)
 
@@ -61,7 +62,7 @@ def slice_the_voids(query_dir: str) -> List[Tuple[float, float, str]]:
     :param query_dir: path to query dir
     :return: List[Tuple[start timestamp, end timestamp, path to file]]
     '''
-    threshold = 0.2
+
     gaps = []
     start_gap, end_gap = 0, 0
     source_audio_file_path = os.path.join(query_dir, 'source.mp3')
@@ -75,12 +76,12 @@ def slice_the_voids(query_dir: str) -> List[Tuple[float, float, str]]:
     data = sorted(data['words'], key=lambda word: word['start'])
     speech_in_gaps = []
     source_audio = AudioSegment.from_mp3(source_audio_file_path)
-    datetime_start = datetime.now()
+
     for idx, word in enumerate(data):
 
         end_gap = word['start']
 
-        if end_gap - start_gap < threshold:
+        if end_gap - start_gap < THRESHOLD:
             start_gap = word['end']
             continue
 
@@ -96,6 +97,7 @@ def slice_the_voids(query_dir: str) -> List[Tuple[float, float, str]]:
         # wav_audio = librosa_convert(gap_mp3_file_path, gap_wav_file_path)
 
         print("gaps: ", start_gap, end_gap)
+        logger.info(f"start_gap: {start_gap},  end_gap: {end_gap}")
         piece_audio = source_audio[start_gap*1000:end_gap*1000]
         piece_audio.set_frame_rate(SAMPLING_RATE)
         piece_audio.export(gap_wav_xk_file_path, format='wav')
@@ -122,9 +124,6 @@ def slice_the_voids(query_dir: str) -> List[Tuple[float, float, str]]:
 
         # print("gap file: ", gap_wav_file_path, ": ", speech_timestamps)
         start_gap = word['end']
-
-    logger.info(f'Time of processing:\n'
-                f'datetime: {datetime.now() - datetime_start} seconds')
 
     return speech_in_gaps
 
@@ -237,10 +236,16 @@ def predict(resp: Response, request: int):
 
     # data = json.loads()
     # print(data)
+
+    datetime_start = datetime.now()
     gaps_info = slice_the_voids(query_dir)
+    logger.info(f'Time of slicing:'
+                f'datetime: {datetime.now() - datetime_start} seconds')
+
     # print("GAPS_INFO: \n\n\n\n\n\n", gaps_info)
     gaps_ans = []
 
+    datetime_start_predict = datetime.now()
     for idx, gap in enumerate(gaps_info):
         # print("GAPS_INFO: \n\n\n\n\n\n", gaps_info)
         print("GAP: ", gap)
@@ -253,6 +258,9 @@ def predict(resp: Response, request: int):
         record['label'] = 'um'
         if pred_label in [3, 4]:
             gaps_ans.append(record)
+
+    logger.info(f'Time of predicting:'
+                f'datetime: {datetime.now() - datetime_start_predict} seconds')
 
     resp.status_code = 200
     return json.dumps(gaps_ans)
