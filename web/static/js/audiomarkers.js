@@ -1,4 +1,5 @@
 let regionsCounts = 0;
+let regionsDeleted = new Set();
 var markersHistory = [];
 var markersStore = new Map();
 
@@ -41,6 +42,7 @@ addParasiteMarkerBtn.onclick = function () {
     regionsCounts++;
 }
 
+
 addBadMarkerBtn.onclick = function () {
     wavesurfer.addRegion({
         id: `${regionsCounts}`,
@@ -51,6 +53,25 @@ addBadMarkerBtn.onclick = function () {
     });
     onRegionCreate(wavesurfer.regions.list[`${regionsCounts}`]);
     regionsCounts++;
+}
+
+function addRegion(_start, _end, _type) {
+    let region = wavesurfer.addRegion({
+        id: `${regionsCounts}`,
+        start: _start,
+        end: _end,
+        loop: false,
+        color: getRegionColorByType(_type)
+    });
+    onRegionCreate(wavesurfer.regions.list[`${regionsCounts}`]);
+    regionsCounts++;
+    return region.id
+}
+
+function removeRegion(regionId) {
+    let region = wavesurfer.regions.list[`${regionId}`]
+    onRegionRemove(region);
+    region.remove();
 }
 
 
@@ -85,10 +106,9 @@ trashcanBtn.onclick = function () {
 }
 
 wavesurfer.on('region-click', function (region, e) {
-    // Play on click, loop on shift click
-    // await new Promise(r => setTimeout(r, 100));
     if (trashcanBtn.classList.contains('active')){
         onRegionRemove(region);
+        removeTextRegion(region.id);
         region.remove();
     } else {
         if (e.ctrlKey) {
@@ -99,10 +119,6 @@ wavesurfer.on('region-click', function (region, e) {
 });
 
 
-
-function markersHistoryAdd(region) {
-
-}
 
 cancelBtn.onclick = function () {
     let lastElement = markersHistory.pop()
@@ -120,8 +136,8 @@ cancelBtn.onclick = function () {
             });
             break;
         case 'update':
-            wavesurfer.regions.list[lastElement.region.id].start = lastElement.region.start
-            wavesurfer.regions.list[lastElement.region.id].end = lastElement.region.end
+            wavesurfer.regions.list[lastElement.region.id].start = lastElement.region.start;
+            wavesurfer.regions.list[lastElement.region.id].end = lastElement.region.end;
             wavesurfer.regions.list[lastElement.region.id].onDrag(0);
             break;
     }
@@ -146,6 +162,7 @@ function onRegionRemove(region){
         action: "remove",
         region: region,
     })
+    regionsDeleted.add(Number(region.id))
 }
 
 wavesurfer.on('region-update-end', function (region, e) {

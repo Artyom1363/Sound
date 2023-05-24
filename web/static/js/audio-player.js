@@ -61,21 +61,3 @@ function initPlayerProcessed(cutAudio) {
     pleerProcessedBlock.style.display = "block"
     wavesurfer2.load(fileServerAPI + cutAudio);
 }
-
-// wavesurfer.on('region-play', function(region) {
-//     region.once('out', function() {
-//         wavesurfer.play(region.start);
-//         wavesurfer.pause();
-//     });
-// });
-
-// let regs = [{
-//     start: 2.68,
-//     end: 3.44
-// },
-//     {
-//         start: 5.68,
-//         end: 7.44
-//     }]
-//
-// initRegions(regs);

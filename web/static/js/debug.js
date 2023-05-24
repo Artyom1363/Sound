@@ -13,11 +13,11 @@
 
 // showProcessStart();
 // showProcessStop();
-//
+// //
 // initPlayer("fileserver/KqnHSPrsUP.mp3")
 // initPlayerProcessed("fileserver/KqnHSPrsUP.mp3")
 // initRegions("fileserver/hFMN7JPEdn.txt")
-// initEditor("fileserver/P5fPko0zb1.txt")
+// initEditor("fileserver/ZBEDnBEcT6.txt", "fileserver/GLWRwDqckx.txt")
 // initDownload("fileserver/KqnHSPrsUP.mp3");
 //
 // lastProcess = {

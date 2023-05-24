@@ -80,7 +80,7 @@ func Run(filePath string) (string, string, *TranscribeText, []int, int, error) {
 		return "", "", nil, nil, 0, fmt.Errorf("fail wait result: %v", err)
 	}
 
-	textFilePath, rawText, err := getResultTextFile(resp.FileID)
+	textFilePath, transcribeText, err := getResultTextFile(resp.FileID)
 	if err != nil {
 		return "", "", nil, nil, 0, fmt.Errorf("fail get result text file: %v", err)
 	}
@@ -90,10 +90,10 @@ func Run(filePath string) (string, string, *TranscribeText, []int, int, error) {
 		return "", "", nil, nil, 0, fmt.Errorf("fail get result audio file: %v", err)
 	}
 
-	transcribeText, err := parseText(rawText)
-	if err != nil {
-		return "", "", nil, nil, 0, fmt.Errorf("fail parse text: %v", err)
-	}
+	//transcribeText, err := parseText(rawText)
+	//if err != nil {
+	//	return "", "", nil, nil, 0, fmt.Errorf("fail parse text: %v", err)
+	//}
 
 	badWordsIds := parseBadWords(transcribeText)
 
@@ -143,7 +143,7 @@ func tryGetResult(resultID int) (bool, error) {
 	return true, nil
 }
 
-func getResultTextFile(resultID int) (string, string, error) {
+func getResultTextFile(resultID int) (string, *TranscribeText, error) {
 	params := url.Values{}
 	params.Add("file_id", strconv.Itoa(resultID))
 
@@ -152,36 +152,43 @@ func getResultTextFile(resultID int) (string, string, error) {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return "", "", fmt.Errorf("http get: %v", err)
+		return "", nil, fmt.Errorf("http get: %v", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", "", fmt.Errorf("read resp: %v", err)
+		return "", nil, fmt.Errorf("read resp: %v", err)
 	}
 
 	bodyStr, err := strconv.Unquote(string(body))
 	if err != nil {
-		return "", "", fmt.Errorf("fail unquote: %v", err)
+		return "", nil, fmt.Errorf("fail unquote: %v", err)
 	}
 
 	if bodyStr == "file not ready!" {
-		return "", "", fmt.Errorf("file not ready")
+		return "", nil, fmt.Errorf("file not ready")
 	}
 
-	filePath, err := files.SaveToTextFile([]byte(bodyStr))
+	bodyStr = strings.TrimSpace(bodyStr)
+
+	var trText TranscribeText
+	if err := gojson.Unmarshal([]byte(bodyStr), &trText); err != nil {
+		return "", nil, fmt.Errorf("unmarshal resp: %v", err)
+	}
+	trText.Text = strings.TrimSpace(trText.Text)
+
+	trTextBytes, err := gojson.Marshal(trText)
 	if err != nil {
-		return "", "", fmt.Errorf("save file: %v", err)
+		return "", nil, fmt.Errorf("marshal transcribe text: %v", err)
 	}
 
-	return filePath, bodyStr, nil
+	filePath, err := files.SaveToTextFile(trTextBytes)
+	if err != nil {
+		return "", nil, fmt.Errorf("save file: %v", err)
+	}
 
-	//bodyStr := fmt.Sprintf(string(body))
-	//var text TranscribeText
-	//if err := gojson.Unmarshal([]byte(bodyStr), &text); err != nil {
-	//	return nil, fmt.Errorf("unmarshal resp: %v", err)
-	//}
+	return filePath, &trText, nil
 }
 
 func getResultAudioFile(resultID int) (string, error) {
@@ -225,16 +232,10 @@ type TranscribeText struct {
 	Words []SingleWorld `json:"words"`
 }
 
-func parseText(rawText string) (*TranscribeText, error) {
-	//bodyStr := fmt.Sprintf(string(body))
-	var text TranscribeText
-	if err := gojson.Unmarshal([]byte(rawText), &text); err != nil {
-		return nil, fmt.Errorf("unmarshal resp: %v", err)
-	}
-	text.Text = strings.TrimSpace(text.Text)
-
-	return &text, nil
-}
+//func parseText(rawText string) (*TranscribeText, error) {
+//	//bodyStr := fmt.Sprintf(string(body))
+//
+//}
 
 func parseBadWords(text *TranscribeText) []int {
 	ids := make([]int, 0)

@@ -56,7 +56,7 @@ async function processFinish(mess) {
     showProcessStop()
     initPlayer(mess.audio)
     initPlayerProcessed(mess.cutAudio)
-    initEditor(mess.text)
+    initEditor(mess.text, mess.transcription)
     initRegions(mess.audioMarkers)
     initDownload(mess.cutAudio)
 }

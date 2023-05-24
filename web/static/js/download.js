@@ -27,11 +27,13 @@ renderBtn.onclick = function() {
     };
 
     for (let id = 0; id < regionsCounts; id++){
-        data.markers.push({
-            Start: wavesurfer.regions.list[`${id}`].start,
-            End: wavesurfer.regions.list[`${id}`].end,
-            Type: getRegionTypeByColor(wavesurfer.regions.list[`${id}`].color)
-        })
+        if (!regionsDeleted.has(id)) {
+            data.markers.push({
+                Start: wavesurfer.regions.list[`${id}`].start,
+                End: wavesurfer.regions.list[`${id}`].end,
+                Type: getRegionTypeByColor(wavesurfer.regions.list[`${id}`].color)
+            })
+        }
     }
 
     fetch(renderAPI, {
