@@ -105,25 +105,34 @@ trashcanBtn.onclick = function () {
     }
 }
 
+var regionPlayBtn = document.getElementById('region-play')
+regionPlayBtn.onclick = function () {
+    if (regionPlayBtn.classList.contains('active')) {
+        regionPlayBtn.classList.remove('active');
+    } else {
+        regionPlayBtn.classList.add('active');
+    }
+}
+
+
 wavesurfer.on('region-click', function (region, e) {
     if (trashcanBtn.classList.contains('active')){
+        e.stopPropagation();
         onRegionRemove(region);
         removeTextRegion(region.id);
         region.remove();
-    } else {
-        if (e.ctrlKey) {
+    } else if (regionPlayBtn.classList.contains('active')) {
             e.stopPropagation();
             region.play();
         }
-    }
 });
-
 
 
 cancelBtn.onclick = function () {
     let lastElement = markersHistory.pop()
     switch (lastElement.action) {
         case 'create':
+            removeTextRegion(lastElement.region.id);
             wavesurfer.regions.list[lastElement.region.id].remove();
             break;
         case 'remove':

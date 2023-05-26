@@ -2,7 +2,7 @@ $(document).ready(function () {
     $('#summernote').summernote({
         toolbar: [
             // ['color', ['color']],
-            ['view', ['codeview']],
+            //['view', ['codeview']],
             ['mybutton', ['bad', 'parasite', 'trash']]
         ],
         height: 120,
@@ -47,12 +47,12 @@ var ParasiteButton = function (context) {
     var ui = $.summernote.ui;
     // create button
     var button = ui.button({
-            contents: '<svg xmlns="http://www.w3.org/2000/svg" id="marker-add-bad" width="24" height="24" style="color:yellow;" fill="currentColor" class="bi bi-align-middle" viewBox="0 0 16 16">\n' +
+            contents: '<svg xmlns="http://www.w3.org/2000/svg" id="marker-add-bad" width="24" height="24" style="color:#ffd900;" fill="currentColor" class="bi bi-align-middle" viewBox="0 0 16 16">\n' +
                 '         <path d="M6 13a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v10zM1 8a.5.5 0 0 0 .5.5H6v-1H1.5A.5.5 0 0 0 1 8zm14 0a.5.5 0 0 1-.5.5H10v-1h4.5a.5.5 0 0 1 .5.5z"/>\n' +
                 '      </svg> Вырезать',
             tooltip: 'parasite',
             click: function (){
-                createTextRegion('parasite', "rgb(255, 255, 0)");
+                createTextRegion('parasite', "hsla(50, 100%, 50%, 0.5)");
             }
         }
     );
@@ -69,7 +69,7 @@ var BadButton = function (context) {
                 '      </svg> Запикать',
             tooltip: 'bad',
             click: function (){
-                createTextRegion('bad', "rgb(255,0,0)");
+                createTextRegion('bad', "hsla(0, 100%, 50%, 0.5)");
             }
         }
     );
