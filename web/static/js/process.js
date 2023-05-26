@@ -68,7 +68,7 @@ function processInfo(mess) {
     let title;
     switch (mess.module) {
         case "transpile":
-            title = "Распознование текста, поиск матов"
+            title = "Распознование текста, нецензурной лексики"
             break;
         case "parasite":
             title = "Поиск слов паразитов"

@@ -9,8 +9,8 @@ import (
 const parasite = "parasite"
 const profanity = "profanity"
 
-const markerParasite = "<span style=\"background-color: hsla(50, 100%, 50%, 0.5);\" id=\"marker-%d\">%s</span>"
-const markerProfanity = "<span style=\"background-color: hsla(0, 100%, 50%, 0.5);\" id=\"marker-%d\">%s</span>"
+const markerParasite = "<span style=\"background-color: %s;\" id=\"marker-%d\">%s</span>"
+const markerProfanity = "<span style=\"background-color: %s;\" id=\"marker-%d\">%s</span>"
 
 type marker struct {
 	t   string
@@ -36,9 +36,9 @@ func EnrichTextWithMarkers(text string, parasiteMarkers []int, profanityMarkers 
 		if len(words) > m.ind {
 			switch m.t {
 			case profanity:
-				words[m.ind] = fmt.Sprintf(markerProfanity, i, words[m.ind])
+				words[m.ind] = fmt.Sprintf(markerProfanity, "hsla(0, 100%, 50%, 0.5)", i, words[m.ind])
 			case parasite:
-				words[m.ind] = fmt.Sprintf(markerParasite, i, words[m.ind])
+				words[m.ind] = fmt.Sprintf(markerParasite, "hsla(50, 100%, 50%, 0.5)", i, words[m.ind])
 
 			}
 		}
