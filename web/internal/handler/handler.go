@@ -23,7 +23,7 @@ import (
 	"web/utils/generator"
 )
 
-const MaxAudioDuration = time.Minute * 3
+const MaxAudioDuration = time.Minute * 30
 
 func MeHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
@@ -71,7 +71,7 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 		}
 		if meta.Length() > MaxAudioDuration {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(fmt.Sprintf("Лимит продолжительности аудио: 3 минуты. "+
+			w.Write([]byte(fmt.Sprintf("Лимит продолжительности аудио: 30 минут. "+
 				"Продолжительность загруженного файла: %f минут", meta.Length().Minutes(),
 			)))
 			return
