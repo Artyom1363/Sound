@@ -1,4 +1,5 @@
 .idea/
 fileserver/
 static/libs/wavesurfer.js
+static/libs/region.js
 static/js/config.js
