@@ -47,14 +47,14 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 		t.Execute(w, token)
 	} else {
 		r.ParseMultipartForm(32 << 20)
-		file, handler, err := r.FormFile("uploadfile")
+		file, _, err := r.FormFile("uploadfile")
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		defer file.Close()
 		//fmt.Fprintf(w, "%v", handler.Header)
-		filePath := "./fileserver/" + generator.GenString(8) + ".txt"
+		filePath := "./fileserver/" + generator.GenString(8) + ".mp3"
 		f, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE, 0666)
 		if err != nil {
 			fmt.Println(err)
@@ -69,16 +69,16 @@ func Upload(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(fmt.Sprintf("Неверный формат файла. Загружайте только mp3!")))
 			return
 		}
-		//if meta.Length() > MaxAudioDuration {
-		//	w.WriteHeader(http.StatusBadRequest)
-		//	w.Write([]byte(fmt.Sprintf("Лимит продолжительности аудио: 30 минут. "+
-		//		"Продолжительность загруженного файла: %f секунд", meta.Length().Seconds(),
-		//	)))
-		//	return
-		//}
+		if meta.Length() > MaxAudioDuration {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(fmt.Sprintf("Лимит продолжительности аудио: 30 минут. "+
+				"Продолжительность загруженного файла: %f минут", meta.Length().Minutes(),
+			)))
+			return
+		}
 		log.Printf("Audio duration: %f minutes", meta.Length().Minutes())
 
-		w.Write([]byte("/fileserver/" + handler.Filename))
+		w.Write([]byte(strings.TrimLeft(filePath, ".")))
 	}
 }
 

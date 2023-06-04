@@ -6,21 +6,41 @@ import (
 	"web/utils/files"
 )
 
-const markerParasite = "<span style=\"background-color: rgb(255, 255, 0);\">%s</span>"
-const markerProfanity = "<span style=\"background-color: rgb(255, 0, 0);\">%s</span>"
+const parasite = "parasite"
+const profanity = "profanity"
+
+const markerParasite = "<span style=\"background-color: %s;\" id=\"marker-%d\">%s</span>"
+const markerProfanity = "<span style=\"background-color: %s;\" id=\"marker-%d\">%s</span>"
+
+type marker struct {
+	t   string
+	ind int
+}
 
 func EnrichTextWithMarkers(text string, parasiteMarkers []int, profanityMarkers []int) string {
 	text = strings.TrimSpace(text)
 	words := strings.Split(text, " ")
-	for _, marker := range parasiteMarkers {
-		if len(words) > marker {
-			words[marker] = fmt.Sprintf(markerParasite, words[marker])
-		}
+	//for _, word := range words {
+	//	fmt.Printf("'%s', ", word)
+	//}
+
+	markers := make([]marker, 0, len(parasiteMarkers)+len(profanityMarkers))
+	for _, m := range parasiteMarkers {
+		markers = append(markers, marker{t: parasite, ind: m})
+	}
+	for _, m := range profanityMarkers {
+		markers = append(markers, marker{t: profanity, ind: m})
 	}
 
-	for _, marker := range profanityMarkers {
-		if len(words) > marker {
-			words[marker] = fmt.Sprintf(markerProfanity, words[marker])
+	for i, m := range markers {
+		if len(words) > m.ind {
+			switch m.t {
+			case profanity:
+				words[m.ind] = fmt.Sprintf(markerProfanity, "hsla(0, 100%, 50%, 0.5)", i, words[m.ind])
+			case parasite:
+				words[m.ind] = fmt.Sprintf(markerParasite, "hsla(50, 100%, 50%, 0.5)", i, words[m.ind])
+
+			}
 		}
 	}
 	return strings.Join(words, " ")

@@ -56,7 +56,7 @@ async function processFinish(mess) {
     showProcessStop()
     initPlayer(mess.audio)
     initPlayerProcessed(mess.cutAudio)
-    initEditor(mess.text)
+    initEditor(mess.text, mess.transcription)
     initRegions(mess.audioMarkers)
     initDownload(mess.cutAudio)
 }
@@ -68,7 +68,7 @@ function processInfo(mess) {
     let title;
     switch (mess.module) {
         case "transpile":
-            title = "Распознование текста, поиск матов"
+            title = "Распознование текста, нецензурной лексики"
             break;
         case "parasite":
             title = "Поиск слов паразитов"

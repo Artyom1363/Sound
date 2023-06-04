@@ -25,10 +25,11 @@ type Pipeline struct {
 
 	transcription *transcribe.TranscribeText
 
-	resultAudioFilePath    string
-	resultCutAudioFilePath string
-	resultTextFilePath     string
-	resultAudioMarkersPath string
+	resultAudioFilePath         string
+	resultCutAudioFilePath      string
+	resultTextFilePath          string
+	resultAudioMarkersPath      string
+	resultTranscriptionFilePath string
 
 	checker *Checker
 }
@@ -44,7 +45,7 @@ func (p *Pipeline) Start() {
 	var err error
 	checker := NewChecker(p.userSession)
 
-	if p.resultTextFilePath, p.resultAudioFilePath, p.transcription, p.badWordsInds, p.transcribeResultID, err =
+	if p.resultTranscriptionFilePath, p.resultAudioFilePath, p.transcription, p.badWordsInds, p.transcribeResultID, err =
 		transcribe.Run(p.sourceAudioFilePath); !checker.processErr(err, "transpile") {
 		return
 	}
@@ -79,8 +80,8 @@ func (p *Pipeline) Start() {
 	}
 
 	mess := fmt.Sprintf(
-		`{"status":"success", "source":"process", "audio":"%s", "cutAudio":"%s", "text":"%s", "audioMarkers":"%s"}`,
-		p.sourceAudioFilePath, p.resultCutAudioFilePath, p.resultTextFilePath, p.resultAudioMarkersPath)
+		`{"status":"success", "source":"process", "audio":"%s", "cutAudio":"%s", "text":"%s", "audioMarkers":"%s", "transcription":"%s"}`,
+		p.sourceAudioFilePath, p.resultCutAudioFilePath, p.resultTextFilePath, p.resultAudioMarkersPath, p.resultTranscriptionFilePath)
 	websocket.SendMessage(p.userSession, mess)
 	log.Printf("pipline finished")
 }

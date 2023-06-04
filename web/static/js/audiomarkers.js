@@ -1,4 +1,5 @@
 let regionsCounts = 0;
+let regionsDeleted = new Set();
 var markersHistory = [];
 var markersStore = new Map();
 
@@ -41,6 +42,7 @@ addParasiteMarkerBtn.onclick = function () {
     regionsCounts++;
 }
 
+
 addBadMarkerBtn.onclick = function () {
     wavesurfer.addRegion({
         id: `${regionsCounts}`,
@@ -51,6 +53,25 @@ addBadMarkerBtn.onclick = function () {
     });
     onRegionCreate(wavesurfer.regions.list[`${regionsCounts}`]);
     regionsCounts++;
+}
+
+function addRegion(_start, _end, _type) {
+    let region = wavesurfer.addRegion({
+        id: `${regionsCounts}`,
+        start: _start,
+        end: _end,
+        loop: false,
+        color: getRegionColorByType(_type)
+    });
+    onRegionCreate(wavesurfer.regions.list[`${regionsCounts}`]);
+    regionsCounts++;
+    return region.id
+}
+
+function removeRegion(regionId) {
+    let region = wavesurfer.regions.list[`${regionId}`]
+    onRegionRemove(region);
+    region.remove();
 }
 
 
@@ -84,30 +105,34 @@ trashcanBtn.onclick = function () {
     }
 }
 
-wavesurfer.on('region-click', function (region, e) {
-    // Play on click, loop on shift click
-    // await new Promise(r => setTimeout(r, 100));
-    if (trashcanBtn.classList.contains('active')){
-        onRegionRemove(region);
-        region.remove();
+var regionPlayBtn = document.getElementById('region-play')
+regionPlayBtn.onclick = function () {
+    if (regionPlayBtn.classList.contains('active')) {
+        regionPlayBtn.classList.remove('active');
     } else {
-        if (e.ctrlKey) {
+        regionPlayBtn.classList.add('active');
+    }
+}
+
+
+wavesurfer.on('region-click', function (region, e) {
+    if (trashcanBtn.classList.contains('active')){
+        e.stopPropagation();
+        onRegionRemove(region);
+        removeTextRegion(region.id);
+        region.remove();
+    } else if (regionPlayBtn.classList.contains('active')) {
             e.stopPropagation();
             region.play();
         }
-    }
 });
 
-
-
-function markersHistoryAdd(region) {
-
-}
 
 cancelBtn.onclick = function () {
     let lastElement = markersHistory.pop()
     switch (lastElement.action) {
         case 'create':
+            removeTextRegion(lastElement.region.id);
             wavesurfer.regions.list[lastElement.region.id].remove();
             break;
         case 'remove':
@@ -120,8 +145,8 @@ cancelBtn.onclick = function () {
             });
             break;
         case 'update':
-            wavesurfer.regions.list[lastElement.region.id].start = lastElement.region.start
-            wavesurfer.regions.list[lastElement.region.id].end = lastElement.region.end
+            wavesurfer.regions.list[lastElement.region.id].start = lastElement.region.start;
+            wavesurfer.regions.list[lastElement.region.id].end = lastElement.region.end;
             wavesurfer.regions.list[lastElement.region.id].onDrag(0);
             break;
     }
@@ -146,6 +171,7 @@ function onRegionRemove(region){
         action: "remove",
         region: region,
     })
+    regionsDeleted.add(Number(region.id))
 }
 
 wavesurfer.on('region-update-end', function (region, e) {
